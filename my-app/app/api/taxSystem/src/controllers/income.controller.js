@@ -18,7 +18,7 @@ exports.addIncome = async (req, res) => {
     const income = await Income.create({
       amount,
       source,
-      receivedDate,
+      receivedDate: date,
       receiptUrl,
       taxPeriodId,
       userId: "4a832c84c0ada085284abf30"//req.user._id // Assuming authentication middleware sets this
