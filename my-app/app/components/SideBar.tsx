@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const DashboardSidebar = () => {
   return (
-    <div className="w-64 h-screen bg-gray-800 text-white flex flex-col">
+    <div className="w-64 h-screen bg-gray-800 text-white flex flex-col top-0 sticky">
       <div className="p-4">
         <h2 className="text-2xl font-bold">TaxPay</h2>
       </div>
