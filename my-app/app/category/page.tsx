@@ -12,7 +12,7 @@ export default function TaxSelector() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center p-6 text-white">
+    <div className="min-h-screen bg-gray-400  flex items-center justify-center p-6 text-white">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -20,7 +20,7 @@ export default function TaxSelector() {
         className="bg-white text-gray-900 rounded-3xl shadow-2xl p-10 max-w-xl w-full text-center space-y-6"
       >
         <h1 className="text-3xl font-extrabold tracking-tight">Choose Your Tax Type</h1>
-        <p className="text-gray-600">Select a tax category to view your personalized dashboard.</p>
+        <p className="text-gray-600">Select a tax category.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <motion.div
             whileHover={{ scale: 1.05 }}
