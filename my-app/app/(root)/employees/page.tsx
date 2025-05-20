@@ -1,31 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import {toast} from 'react-hot-toast'
 
 const EmployeeManagement = () => {
     const [employees, setEmployees] = useState([
         {
-            id: 1,
-            name: 'shalom wubu',
-            position: 'software engineer',
+            employeeName: 'shalom wubu',
+            description: 'software engineer',
             salary: '100,000',
-            taxAmount: 'to be calculated',
         },
         {
-            id: 2,
-            name: 'john doe',
-            position: 'product manager',
+            employeeName: 'john doe',
+            description: 'product manager',
             salary: '120,000',
-            taxAmount: 'to be calculated',
         },
     ]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [newEmployee, setNewEmployee] = useState({
-        name: '',
-        position: '',
+        employeeName: '',
+        description: '',
         salary: '',
-        taxAmount: '',
     });
 
     const openAddEmployeeForm = () => {
@@ -34,13 +29,37 @@ const EmployeeManagement = () => {
 
     const closeAddEmployeeForm = () => {
         setShowAddForm(false);
-        setNewEmployee({ name: '', position: '', salary: '', taxAmount: '' });
+        setNewEmployee({ employeeName: '', description: '', salary: '' });
     };
+
+      useEffect(() => {
+        const fetchEmployees = async () => {
+          try {
+            const response = await fetch('http://localhost:7000/api/payroll');
+            if (response.ok) {
+              const data = await response.json();
+              if (Array.isArray(data.employees)) {
+                setEmployees(data.employees); // Ensure data is an array
+              } else {
+                console.error('Invalid API response:', data);
+                setEmployees([]); // Default to an empty array if response is invalid
+              }
+            } else {
+              toast.error('Failed to fetch Incomes.');
+            }
+          } catch (error) {
+            console.error('Error fetching Incomes:', error);
+            toast.error('An error occurred while fetching Incomes.');
+          }
+        };
+    
+        fetchEmployees();
+      }, []);
 
     const handleAddEmployee = async (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch('/api/employees', {
+        try{
+            const response = await fetch('http://localhost:7000/api/payroll', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -66,23 +85,34 @@ const EmployeeManagement = () => {
         toast.info('Edit Employee with ID: ' + id);
     };
 
-    const deleteEmployee = (id) => {
-        if (confirm('Are you sure you want to delete this employee?')) {
-            setEmployees(employees.filter((emp) => emp.id !== id));
-            toast.success('Deleted Employee with ID: ' + id);
-        }
-    };
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:7000/api/payroll/${id}`, {
+        method: 'DELETE',
+      });
 
-    // Filter employees based on the search term
-    const filteredEmployees = employees.filter(
-        (emp) =>
-            emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            emp.id.toString().includes(searchTerm)
-    );
+      if (response.ok) {
+        setEmployees(employees.filter((Employee) => Employee._id !== id));
+        toast.success('payroll deleted successfully!');
+      } else {
+        toast.error('Failed to delete payroll.');
+      }
+    } catch (error) {
+      console.error('Error deleting payroll:', error);
+      toast.error('An error occurred while deleting payroll.');
+    }
+  };
+
+const filteredEmployees = employees.filter(
+    (emp) =>
+        (emp.employeeName || "")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+);
 
     return (
         <div className="container mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-4">Employee Management</h1>
+            <h1 className="text-2xl font-bold mb-4">PayRoll</h1>
             <div className="flex justify-between mb-4">
                 <input
                     type="text"
@@ -100,30 +130,24 @@ const EmployeeManagement = () => {
             </div>
             <table className="min-w-full bg-white">
                 <thead>
-                    <tr className="w-full bg-gray-800 text-white">
-                        <th className="py-2">Employee ID</th>
+                    <tr className="w-fullscreen bg-gray-800 text-white ">
                         <th className="py-2">Name</th>
-                        <th className="py-2">Position</th>
                         <th className="py-2">Salary</th>
-                        <th className="py-2">Tax Amount</th>
-                        <th className="py-2">Actions</th>
-                        <th className="py-2">Total Tax</th>
+                        <th className="py-2">Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     {filteredEmployees.map((emp) => (
                         <tr key={emp.id} className="border-b ">
-                            <td className="py-2 px-12">{emp.id}</td>
-                            <td className="py-2 px-12">{emp.name}</td>
-                            <td className="py-2 px-12">{emp.position}</td>
-                            <td className="py-2 px-12">{emp.salary}</td>
-                            <td className="py-2 px-12">{emp.taxAmount}</td>
-                            <td className="py-2 px-12">
-                                <button onClick={() => editEmployee(emp.id)} className="text-blue-500">
+                            <td className="py-2 pl-20">{emp.employeeName}</td>
+                            <td className="py-2 pl-20">{emp.salary}</td>
+                            <td className="py-2 pl-20">{emp.description}</td>
+                            <td className="py-2 pl-20">
+                                <button onClick={() => handleEdit(emp.id)} className="text-blue-500">
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => deleteEmployee(emp.id)}
+                                    onClick={() => handleDelete(emp.id)}
                                     className="text-red-500 ml-4"
                                 >
                                     Delete
@@ -144,21 +168,21 @@ const EmployeeManagement = () => {
                                 <label className="block text-gray-700">Name</label>
                                 <input
                                     type="text"
-                                    value={newEmployee.name}
+                                    value={newEmployee.employeeName}
                                     onChange={(e) =>
-                                        setNewEmployee({ ...newEmployee, name: e.target.value })
+                                        setNewEmployee({ ...newEmployee, employeeName: e.target.value })
                                     }
                                     className="border rounded-lg p-2 w-full"
                                     required
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-gray-700">Position</label>
+                                <label className="block text-gray-700">Description</label>
                                 <input
                                     type="text"
-                                    value={newEmployee.position}
+                                    value={newEmployee.description}
                                     onChange={(e) =>
-                                        setNewEmployee({ ...newEmployee, position: e.target.value })
+                                        setNewEmployee({ ...newEmployee, description: e.target.value })
                                     }
                                     className="border rounded-lg p-2 w-full"
                                     required
@@ -171,18 +195,6 @@ const EmployeeManagement = () => {
                                     value={newEmployee.salary}
                                     onChange={(e) =>
                                         setNewEmployee({ ...newEmployee, salary: e.target.value })
-                                    }
-                                    className="border rounded-lg p-2 w-full"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-700">Tax Amount</label>
-                                <input
-                                    type="text"
-                                    value={newEmployee.taxAmount}
-                                    onChange={(e) =>
-                                        setNewEmployee({ ...newEmployee, taxAmount: e.target.value })
                                     }
                                     className="border rounded-lg p-2 w-full"
                                     required
