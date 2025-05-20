@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Bell, User, Settings, CreditCard, Calculator, PlusCircle, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { Bar, Pie } from "react-chartjs-2";
+import { useRouter } from "next/navigation";
 import {
   Chart as ChartJS,
   BarElement,
@@ -12,6 +13,7 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
+
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ChartTooltip, Legend, ArcElement);
 
@@ -60,6 +62,7 @@ const pieOptions = {
 };
 
 export default function Dashboard() {
+  const router =useRouter()
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* Navigation */}
@@ -89,13 +92,16 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="flex gap-4 mb-6">
-        <button className="flex gap-2 rounded px-4 py-2 font-semibold bg-blue-500 text-white hover:bg-blue-600 transition">
+        <button onClick={()=>router.push('/taxcalculator')}
+        className="flex gap-2 rounded px-4 py-2 font-semibold bg-blue-500 text-white hover:bg-blue-600 transition">
           <Calculator className="w-4 h-4" /> Calculate Tax
         </button>
-        <button className="flex gap-2 rounded px-4 py-2 font-semibold bg-green-500 text-white hover:bg-green-600 transition">
+        <button onClick={()=>router.push('/payments')}
+         className="flex gap-2 rounded px-4 py-2 font-semibold bg-green-500 text-white hover:bg-green-600 transition">
           <CreditCard className="w-4 h-4" /> Make a Payment
         </button>
-        <button className="flex gap-2 rounded px-4 py-2 font-semibold bg-gray-800 text-white hover:bg-gray-900 transition">
+        <button onClick={()=>router.push('/income')} 
+        className="flex gap-2 rounded px-4 py-2 font-semibold bg-gray-800 text-white hover:bg-gray-900 transition">
           <PlusCircle className="w-4 h-4" /> Add Income/Expense
         </button>
       </div>
@@ -124,21 +130,6 @@ export default function Dashboard() {
             <Pie data={pieData} options={pieOptions} />
           </div>
         </div>
-      </div>
-
-      {/* Profile Overview */}
-      <div className="rounded-lg border bg-white p-4 shadow mb-6">
-        <h3 className="text-md font-medium mb-4">User Profile</h3>
-        <p><strong>Name:</strong> Jane Doe</p>
-        <p><strong>Email:</strong> jane@example.com</p>
-        <p><strong>Status:</strong> Active</p>
-      </div>
-
-      {/* Help and Support */}
-      <div className="mt-6 text-center">
-        <button className="inline-flex items-center gap-2 px-4 py-2 rounded bg-transparent text-blue-600 hover:underline font-semibold">
-          <FileText className="w-4 h-4 mr-2" /> Help & Support
-        </button>
       </div>
     </div>
   );

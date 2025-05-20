@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 const IncomePage = () => {
   const [Incomes, setIncomes] = useState([]); // Initialize as an empty array
@@ -8,6 +9,8 @@ const IncomePage = () => {
   const [source, setSource] = useState('');
   const [paidDate, setPaidDate] = useState('');
   const [receipt, setReceipt] = useState(null);
+
+  const router =useRouter()
 
   // Fetch all Incomes
   useEffect(() => {
@@ -91,6 +94,11 @@ const IncomePage = () => {
       toast.error('An error occurred while deleting Income.');
     }
   };
+
+  const handleClick = ()=>{
+    router.push('/expense')
+
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -178,6 +186,12 @@ const IncomePage = () => {
           ))}
         </tbody>
       </table>
+      <div>
+        <button 
+        onClick={()=>handleClick()}
+        className="bg-green-500 text-white rounded-lg px-2 py-1 mt-10 ml-260">go to expense</button>
+
+      </div>
     </div>
   );
 };

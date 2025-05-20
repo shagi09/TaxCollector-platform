@@ -2,11 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import {useRouter} from 'next/navigation'
 
 const CalculatedTaxPage = () => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
   const [calculatedTax, setCalculatedTax] = useState(0);
+
+  const router = useRouter()
 
   useEffect(() => {
     const fetchCalculatedTax = async () => {
@@ -29,10 +32,14 @@ const CalculatedTaxPage = () => {
     fetchCalculatedTax();
   }, []);
 
+  const handleClick = ()=>{
+    router.push('/payments')
+  }
+
   return (
     <div className="container mx-auto p-6">
       <motion.h1
-        className="text-4xl font-bold mb-6 text-center text-gray-600"
+        className="text-4xl font-bold mb-6 text-center text-black"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -69,7 +76,7 @@ const CalculatedTaxPage = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <span className="font-bold text-gray-600">Calculated Tax:</span> ${calculatedTax.toFixed(2)}
+          <span className="font-bold text-gray-600">Tax Owed:</span> ${calculatedTax.toFixed(2)}
         </motion.p>
       </motion.div>
 
@@ -80,10 +87,10 @@ const CalculatedTaxPage = () => {
         transition={{ duration: 0.5 }}
       >
         <button
-          className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105"
-          onClick={() => toast.success('Tax details refreshed!')}
+          className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105"
+          onClick={() => handleClick()}
         >
-          Refresh Tax Details
+          Proceed to Payment
         </button>
       </motion.div>
     </div>
