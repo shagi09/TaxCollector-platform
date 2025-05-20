@@ -128,12 +128,13 @@ const filteredEmployees = employees.filter(
                     Add Employee
                 </button>
             </div>
-            <table className="min-w-full bg-white">
+            <table className="min-w-full bg-white overflow-hidden">
                 <thead>
-                    <tr className="w-fullscreen bg-gray-800 text-white ">
+                    <tr className=" bg-gray-800 text-white ">
                         <th className="py-2">Name</th>
                         <th className="py-2">Salary</th>
                         <th className="py-2">Description</th>
+                        <th className="py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
