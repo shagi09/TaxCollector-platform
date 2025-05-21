@@ -4,7 +4,7 @@ import { signIn } from 'next-auth/react';
 import {FaGoogle,FaGithub,FaEye,FaEyeSlash} from 'react-icons/fa'
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [tin, setTin] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
@@ -14,7 +14,7 @@ const Login = () => {
     try {
       const result = await signIn('credentials', {
         redirect: false,
-        email,
+        tin,
         password,
       });
 
@@ -31,7 +31,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex gap-4 items-center justify-center min-h-screen bg-blue-100">
+    <div className="flex gap-4 items-center justify-center min-h-screen bg-gray-400">
       <div className="hidden md:block">
         {/* Add your illustration here */}
         <img src="/illustration.png" alt="Illustration" className="w-full max-w-md" />
@@ -40,11 +40,11 @@ const Login = () => {
         <h1 className="mt-2 text-center font-bold text-4xl text-gray-600">Sign In</h1>
         <form onSubmit={handleSubmit} className="mt-6">
           <input
-            placeholder="Email"
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="TIN"
+            type="number"
+            id="tin"
+            value={tin}
+            onChange={(e) => setTin(e.target.value)}
             required
             className="mt-1 p-2 border text-gray-600 border-gray-300 rounded-4xl w-full"
           />
