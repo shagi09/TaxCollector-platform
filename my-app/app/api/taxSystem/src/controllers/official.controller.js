@@ -71,4 +71,27 @@ exports.loginOfficial = async (req, res) => {
   }
 };
 
+exports.registerOfficial = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
+    // Check if email already exists
+    const existing = await Official.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const newOfficial = await Official.create({
+      name,
+      email,
+      passwordHash
+    });
+
+    res.status(201).json({ message: 'Official registered successfully', officialId: newOfficial._id });
+  } catch (error) {
+    console.error('Register Official Error:', error);
+    res.status(500).json({ error: 'Failed to register official' });
+  }
+};

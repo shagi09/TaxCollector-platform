@@ -1,6 +1,6 @@
 const { verifyToken } = require('../utils/jwt');
 
-const authMiddleware = (req, res, next) => {
+exports.isLogin = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -28,4 +28,3 @@ exports.verifyCityOfficial = (req, res, next) => {
 };
 
 
-module.exports = authMiddleware;
