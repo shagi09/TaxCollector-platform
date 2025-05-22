@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const expenseController = require('../controllers/expense.controller');
-const authMiddleware = require('../middlewares/authMiddleware');
+const { authMiddleware } = require('../middlewares/authMiddleware');
 const upload = require('../utils/upload')
 
 router.post('/', /*authMiddleware*/ upload.single('receipt'), expenseController.createExpense);

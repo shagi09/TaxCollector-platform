@@ -12,7 +12,7 @@ exports.createExpense = async (req, res) => {
     const date = paidDate ? new Date(paidDate) : new Date();
     const taxPeriodId = await getOrCreateTaxPeriodId(date);
 
-    const receiptUrl = req.file ? `/expense/uploads/receipts/${req.file.filename}` : null;
+    const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
     
 
     const expense = await Expense.create({

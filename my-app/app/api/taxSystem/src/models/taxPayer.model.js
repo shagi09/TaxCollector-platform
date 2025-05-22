@@ -10,6 +10,11 @@ const taxPayerSchema = new mongoose.Schema({
     unique: true,
     required: true
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
   passwordHash: {
     type: String,
     required: true
@@ -19,3 +24,5 @@ const taxPayerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('TaxPayer', taxPayerSchema);
+
+
