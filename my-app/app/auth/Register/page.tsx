@@ -43,7 +43,7 @@ const Register = () => {
           businessName: '',
           businessPermitUrl: '',
         });
-        router.push('/')
+        router.push('/auth/Login')
       }
     } catch (err) {
       setError('An unexpected error occurred.');
