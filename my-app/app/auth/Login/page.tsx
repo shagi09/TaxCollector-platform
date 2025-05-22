@@ -12,20 +12,23 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        tin,
-        password,
+      const response = await fetch('http://localhost:7000/api/auth/taxpayer/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tin, password }),
       });
 
-      if (result?.error) {
-        setError(result.error);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed');
       } else {
-        // Redirect to the homepage or dashboard
+        // Save token if needed
+        localStorage.setItem('token', data.token);
+        // Redirect to dashboard or homepage
         window.location.href = '/';
       }
     } catch (err) {
-      console.error('Login failed:', err);
       setError('An unexpected error occurred.');
     }
   };

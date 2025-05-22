@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const connectDB = require('./config/db');
+const cors=require('cors')
 require('dotenv').config();
 
 // Connect to MongoDB
@@ -9,6 +10,10 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
+app.use(cors({
+  origin: 'http://localhost:3000', // allow your frontend origin
+  credentials: true // if you use cookies or authentication
+}));
  
 // Routes
 app.use('/api/incomes', require('./routes/income.routes'));

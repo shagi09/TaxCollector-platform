@@ -43,6 +43,11 @@ exports.loginTaxPayer = async (req, res) => {
   }
 };
 
+exports.logoutTaxPayer = async (req, res) => {
+  // You can just send a success response for now
+  res.status(200).json({ message: "Logged out" });
+};
+
 
 exports.signupTaxPayer = async (req, res) => {
   try {
