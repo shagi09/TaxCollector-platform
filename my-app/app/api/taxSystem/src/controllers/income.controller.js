@@ -10,6 +10,7 @@ exports.addIncome = async (req, res) => {
 
     const date = paidDate ? new Date(paidDate) : new Date();
     const taxPeriodId = await getOrCreateTaxPeriodId(date);
+    console.log("taxPeriodId", taxPeriodId )
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
     
@@ -18,10 +19,10 @@ exports.addIncome = async (req, res) => {
     const income = await Income.create({
       amount,
       source,
-      receivedDate,
+      date,
       receiptUrl,
       taxPeriodId,
-      userId: "4a832c84c0ada085284abf30"//req.user._id // Assuming authentication middleware sets this
+      userId: req.user._id //"4a832c84c0ada085284abf30"// Assuming authentication middleware sets this
     });
 
     res.status(201).json({ message: 'Income recorded successfully', income });
@@ -34,7 +35,8 @@ exports.addIncome = async (req, res) => {
 // Get all income records for logged-in user
 exports.getIncomes = async (req, res) => {
   try {
-    const incomes = await Income.find({ userId: "4a832c84c0ada085284abf30" /*req.user._id*/ })
+    const userId = req.user._id
+    const incomes = await Income.find({ userId /*userId: "4a832c84c0ada085284abf30"*/  })
       .populate('taxPeriodId')
       .sort({ receivedDate: -1 });
 

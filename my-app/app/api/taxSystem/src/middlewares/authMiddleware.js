@@ -12,6 +12,7 @@ exports.isLogin = (req, res, next) => {
   try {
     const decoded = verifyToken(token);
     req.user = decoded;
+    req.user._id = req.user.id
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
