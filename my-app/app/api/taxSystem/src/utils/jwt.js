@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "Danoxi4Life";
 const JWT_EXPIRES_IN = '1d'; // or '7d', depending on your needs
 
 // Sign JWT with user payload

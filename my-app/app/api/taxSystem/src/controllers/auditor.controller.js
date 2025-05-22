@@ -1,6 +1,7 @@
 const TaxPayer = require('../models/taxPayer.model');
 const { signToken } = require('../utils/jwt');
 const Auditor = require('../models/auditor.model')
+const bcrypt = require("bcrypt")
 
 
 exports.listTaxPayers = async (req, res) => {
