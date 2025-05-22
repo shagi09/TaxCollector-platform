@@ -21,6 +21,7 @@ app.use('/api/expenses', require('./routes/expense.routes'));
 app.use('/api/payroll', require('./routes/payroll.routes'));
 app.use('/api/auth', require('./routes/auth.routes'))
 app.use('/api/auditor', require('./routes/auditor.routes'))
+app.use('/api/official', require('./routes/official.routes'))
 
 // Root test
 app.get('/', (req, res) => {
