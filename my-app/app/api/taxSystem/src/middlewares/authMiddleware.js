@@ -18,4 +18,14 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+// middleware/authMiddleware.js
+exports.verifyCityOfficial = (req, res, next) => {
+  const user = req.user;
+  if (user && user.role === 'official') {
+    return next();
+  }
+  return res.status(403).json({ error: 'Access denied. Officials only.' });
+};
+
+
 module.exports = authMiddleware;

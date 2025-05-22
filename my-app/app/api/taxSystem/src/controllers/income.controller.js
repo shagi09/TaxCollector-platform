@@ -18,12 +18,11 @@ exports.addIncome = async (req, res) => {
     const income = await Income.create({
       amount,
       source,
-      receivedDate: date,
+      receivedDate,
       receiptUrl,
       taxPeriodId,
       userId: "4a832c84c0ada085284abf30"//req.user._id // Assuming authentication middleware sets this
     });
-    console.log(req.body)
 
     res.status(201).json({ message: 'Income recorded successfully', income });
   } catch (error) {
