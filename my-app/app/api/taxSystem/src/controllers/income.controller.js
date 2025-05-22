@@ -46,3 +46,51 @@ exports.getIncomes = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch income records' });
   }
 };
+
+// Update an expense
+exports.updateIncome = async (req, res) => {
+  try {
+    const userId = req.user._id; // replace with req.user.id in production
+
+    const income = await Income.findOne({ _id: req.params.id, userId });
+
+    if (!income) {
+      return res.status(404).json({ error: 'Expense not found or unauthorized' });
+    }
+
+    // Update only allowed fields
+    const { amount, date, source } = req.body;
+
+    if (source !== undefined) Income.source = source;
+    if (amount !== undefined) Income.amount = amount;
+    if (date !== undefined) Income.date = new Date(date);
+ 
+    const updated = await income.save();
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update Income Error:', error);
+    res.status(500).json({ error: 'Failed to update Income' });
+  }
+};
+
+
+// Delete an expense
+exports.deleteIncome = async (req, res) => {
+  try {
+    const userId = req.user._id; // replace with req.user.id in production
+
+    const income = await Income.findOne({ _id: req.params.id, userId });
+
+    if (!income) {
+      return res.status(404).json({ error: 'Expense not found or unauthorized' });
+    }
+
+    await income.remove();
+
+    res.json({ message: 'Income deleted successfully' });
+  } catch (error) {
+    console.error('Delete Income Error:', error);
+    res.status(500).json({ error: 'Failed to delete income' });
+  }
+};
