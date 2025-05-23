@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const payrollController = require('../controllers/payroll.controller');
-const {authMiddleware} = require('../middlewares/authMiddleware');
+const { addPayrollRecord, getPayrollSummary, updatePayroll, deletePayroll } = require('../controllers/payroll.controller');
+const {isLogin} = require('../middlewares/authMiddleware');
 
-router.post('/', /*authMiddleware,*/ payrollController.addPayrollRecord);
-router.get('/:taxPeriodId', /*authMiddleware,*/ payrollController.getPayrollSummary);
-router.put('/:taxPeriodId', /*authMiddleware,*/ payrollController.getPayrollSummary);
-router.delete('/:taxPeriodId', /*authMiddleware,*/ payrollController.getPayrollSummary);
+router.post('/', isLogin, addPayrollRecord);
+router.get('/',isLogin, getPayrollSummary);
+router.put('/:id',isLogin, updatePayroll);
+router.delete('/:id', isLogin, deletePayroll);
 
 module.exports = router;

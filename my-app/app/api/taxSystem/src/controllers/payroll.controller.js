@@ -17,7 +17,7 @@ exports.addPayrollRecord = async (req, res) => {
       tax,
       description,
       taxPeriodId,
-      userId: "4a832c84c0ada085284abf30" /*req.user._id,*/ // Assuming authentication middleware sets this
+      userId: req.user._id, // "4a832c84c0ada085284abf30" /* Assuming authentication middleware sets this
     });
 
     res.status(201).json({ message: 'Payroll record added', record });
@@ -31,8 +31,8 @@ exports.addPayrollRecord = async (req, res) => {
 exports.getPayrollSummary = async (req, res) => {
   try {
     const records = await PayrollRecord.find({
-      userId: "4a832c84c0ada085284abf30",//req.user._id,
-      taxPeriodId: req.params.taxPeriodId,
+      userId: req.user._id,
+      // taxPeriodId: req.params.taxPeriodId,
     }).sort({ createdAt: -1 });
 
     const totalSalary = records.reduce((sum, r) => sum + parseFloat(r.salary), 0);
@@ -48,25 +48,40 @@ exports.getPayrollSummary = async (req, res) => {
 // Update a payroll record
 exports.updatePayroll = async (req, res) => {
   try {
-    const updated = await Payroll.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const userId = req.user._id; // replace with req.user.id in production
 
-    if (!updated) {
-      return res.status(404).json({ error: 'Payroll record not found' });
+    const payroll = await PayrollRecord.findOne({ _id: req.params.id, userId });
+
+    if (!payroll) {
+      return res.status(404).json({ error: 'Payroll record not found or unauthorized' });
     }
+
+    // Update only allowed fields
+    const { employeeName, salary, description } = req.body;
+    console.log(req.body)
+
+    if (employeeName !== undefined) payroll.employeeName = employeeName;
+    if (salary !== undefined) {
+      payroll.salary = salary;
+      payroll.tax = parseFloat(salary) * 0.1; // Recalculate tax if salary changes
+    }
+    if (description !== undefined) payroll.description = description;
+
+    const updated = await payroll.save();
 
     res.json(updated);
   } catch (error) {
     console.error('Update Payroll Error:', error);
-    res.status(500).json({ error: 'Failed to update payroll' });
+    res.status(500).json({ error: 'Failed to update payroll record' });
   }
 };
+
+
 
 // Delete a payroll record
 exports.deletePayroll = async (req, res) => {
   try {
-    const deleted = await Payroll.findByIdAndDelete(req.params.id);
+    const deleted = await PayrollRecord.findByIdAndDelete(req.params.id);
 
     if (!deleted) {
       return res.status(404).json({ error: 'Payroll record not found' });
