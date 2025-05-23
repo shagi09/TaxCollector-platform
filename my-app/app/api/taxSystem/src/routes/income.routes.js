@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const incomeController = require('../controllers/income.controller');
-const { authMiddleware } = require('../middlewares/authMiddleware');
+const { addIncome, getIncomes, updateIncome, deleteIncome } = require('../controllers/income.controller');
+const { isLogin } = require('../middlewares/authMiddleware');
 const upload = require('../utils/upload')
 
 // Protected routes (require user to be logged in)
-router.post('/', /*authMiddleware,*/ upload.single('receipt'), incomeController.addIncome);
-router.get('/',/* authMiddleware, */incomeController.getIncomes);
+router.post('/', isLogin,  upload.single('receipt'), addIncome);
+router.get('/', isLogin , getIncomes);
+router.put('/:id', isLogin, updateIncome)
+router.delete('/:id', isLogin, deleteIncome)
 
 module.exports = router;

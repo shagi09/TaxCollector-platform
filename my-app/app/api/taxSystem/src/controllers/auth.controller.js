@@ -57,8 +57,14 @@ exports.signupTaxPayer = async (req, res) => {
       email,
       password,
       businessName,
-      businessPermitUrl
     } = req.body;
+
+    const permitUrl = req.file ? `/uploads/permits/${req.file.filename}` : null;
+
+    if (!permitUrl) {
+      return res.status(400).json({ error: 'Business permit file is required' });
+    }
+
 
     // Check if TIN or Email already exists
     const existingTIN = await TaxPayer.findOne({ tin });
@@ -81,7 +87,7 @@ exports.signupTaxPayer = async (req, res) => {
       email,
       passwordHash,
       businessName,
-      businessPermitUrl
+      permitUrl
     });
 
     await newTaxPayer.save();
