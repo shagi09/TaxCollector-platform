@@ -88,12 +88,23 @@ exports.getPayrollSummary = async (req, res) => {
     const totalSalary = monthRecord.records.reduce((sum, r) => sum + parseFloat(r.salary.toString()), 0);
     const totalTax = monthRecord.records.reduce((sum, r) => sum + parseFloat(r.tax.toString()), 0);
 
+    let nextMonth = month + 1;
+    let dueYear = year;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      dueYear += 1;
+    }
+  const dueDateObj = new Date(dueYear, nextMonth - 1, 30, 12); // 12 noon prevents timezone shift
+  const dueDate = dueDateObj.toISOString().split('T')[0]; // "2025-06-30"
+
+ 
     res.status(200).json({
       year,
       month,
       records: monthRecord.records,
       totalSalary,
-      totalTax
+      totalTax,
+      dueDate
     });
   } catch (err) {
     console.error('Get Payroll by Year and Month Error:', err);
@@ -181,9 +192,9 @@ exports.loadPreviousMonthRecordsCurrent = async (req, res) => {
     }
 
     const currentMonthIndex = payrollDoc.months.findIndex(m => m.month === month);
-    if (currentMonthIndex !== -1 && payrollDoc.months[currentMonthIndex].records.length > 0) {
-      return res.status(400).json({ error: 'Current month already has payroll records' });
-    }
+    // if (currentMonthIndex !== -1 && payrollDoc.months[currentMonthIndex].records.length > 0) {
+    //   return res.status(400).json({ error: 'Current month already has payroll records' });
+    // }
 
     const prevMonthRecord = payrollDoc.months.find(m => m.month === prevMonth);
     if (!prevMonthRecord || prevMonthRecord.records.length === 0) {
