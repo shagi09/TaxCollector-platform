@@ -1,7 +1,8 @@
 const Income = require('../models/income.model');
 const Expense = require('../models/expense.model');
+const { calculateProfitTax } = require('../utils/calculateTax')
 
- exports.calculateProfitTax = async (req, res) => {
+ exports.profitTax = async (req, res) => {
   try {
     const userId = req.user._id;
 
@@ -14,7 +15,7 @@ const Expense = require('../models/expense.model');
     const totalExpense = expenses.reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
 
     const profit = totalIncome - totalExpense;
-    const tax = profit > 0 ? profit * 0.15 : 0;
+    const tax = calculateProfitTax(profit);
 
     res.json({
       totalIncome,

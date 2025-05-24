@@ -5,7 +5,7 @@ const { isLogin } = require('../middlewares/authMiddleware');
 const upload = require('../utils/upload')
 
 router.post('/', isLogin, upload.single('receipt'), createExpense);
-router.get('/', isLogin, getExpenses);
+router.get('/:year', isLogin, getExpenses);
 router.put('/:id', isLogin, updateExpense)
 // router.get('/:id', isLogin, expenseController.getExpenseById)
 router.delete('/:id', isLogin, deleteExpense)

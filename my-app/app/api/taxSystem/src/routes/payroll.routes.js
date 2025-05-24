@@ -4,7 +4,7 @@ const { addPayrollRecord, getPayrollSummary, updatePayroll, deletePayroll } = re
 const {isLogin} = require('../middlewares/authMiddleware');
 
 router.post('/', isLogin, addPayrollRecord);
-router.get('/',isLogin, getPayrollSummary);
+router.get('/:year/:month',isLogin, getPayrollSummary);
 router.put('/:id',isLogin, updatePayroll);
 router.delete('/:id', isLogin, deletePayroll);
 
