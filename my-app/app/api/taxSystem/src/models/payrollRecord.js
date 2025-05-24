@@ -20,7 +20,8 @@ const payrollRecordSchema = new mongoose.Schema({
           type: String, 
           enum: ['pending', 'paid', 'overdue'], 
           default: 'pending' 
-        }
+        },
+      penalty: { type: Number, default: 0 }
     }
   ]
 }, { timestamps: true });
