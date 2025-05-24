@@ -6,6 +6,7 @@ const { isLogin } = require('../middlewares/authMiddleware')
 const upload = require('../utils/upload')
 
 
+
 router.post('/taxpayer/login', loginTaxPayer);
 // router.post('/taxpayer/logout', logoutTaxPayer);
 router.post('/taxpayer/change-password', isLogin, changePassword);

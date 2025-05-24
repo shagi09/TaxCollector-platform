@@ -9,4 +9,4 @@ router.post('/login', loginOfficial);
 router.post('/register', registerOfficial);
 
 
-module.exports = router;
+module.exports = router

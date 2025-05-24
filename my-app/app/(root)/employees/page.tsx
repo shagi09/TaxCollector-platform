@@ -45,7 +45,7 @@ const EmployeeManagement = () => {
                 setEmployees([]); // Default to an empty array if response is invalid
               }
             } else {
-              toast.error('Failed to fetch Incomes.');
+              toast.error('Failed to fetch PayRoll.');
             }
           } catch (error) {
             console.error('Error fetching Incomes:', error);
