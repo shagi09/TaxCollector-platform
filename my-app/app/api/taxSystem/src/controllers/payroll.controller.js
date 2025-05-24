@@ -1,26 +1,57 @@
 const PayrollRecord = require('../models/payrollRecord');
 const { getOrCreateTaxPeriodId } = require('../utils/taxPeriodIdCreator');
+const { calculatePayrollTax } = require('../utils/calculateTax')
 
 // Add a new payroll record
 exports.addPayrollRecord = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { employeeName, salary, description } = req.body;
 
-    const now = new Date();
-    const taxPeriodId = await getOrCreateTaxPeriodId(now);
+    const createdAt = new Date();
+    const year = createdAt.getFullYear();
+    const month = createdAt.getMonth() + 1; // JavaScript months are 0-indexed
 
-    const tax = parseFloat(salary) * 0.1;
+    const tax = calculatePayrollTax(salary);
 
-    const record = await PayrollRecord.create({
+    const newRecord = {
       employeeName,
       salary,
       tax,
       description,
-      taxPeriodId,
-      userId: req.user._id, // "4a832c84c0ada085284abf30" /* Assuming authentication middleware sets this
-    });
+      createdAt,
+      userId,
+    };
 
-    res.status(201).json({ message: 'Payroll record added', record });
+    let payrollRecord = await PayrollRecord.findOne({ userId, year });
+
+    if (!payrollRecord) {
+      // Create new year with the current month and record
+      payrollRecord = await PayrollRecord.create({
+        userId,
+        year,
+        months: [{
+          month,
+          records: [newRecord],
+        }],
+      });
+    } else {
+      // Find the existing month or create it
+      const monthEntry = payrollRecord.months.find(m => m.month === month);
+
+      if (monthEntry) {
+        monthEntry.records.push(newRecord);
+      } else {
+        payrollRecord.months.push({
+          month,
+          records: [newRecord],
+        });
+      }
+
+      await payrollRecord.save();
+    }
+
+    res.status(201).json({ message: 'Payroll record added', record: newRecord });
   } catch (err) {
     console.error('Add Payroll Error:', err);
     res.status(500).json({ error: 'Failed to add payroll record' });
@@ -30,18 +61,42 @@ exports.addPayrollRecord = async (req, res) => {
 // Get payroll summary for a tax period
 exports.getPayrollSummary = async (req, res) => {
   try {
-    const records = await PayrollRecord.find({
-      userId: req.user._id,
-      // taxPeriodId: req.params.taxPeriodId,
-    }).sort({ createdAt: -1 });
+    const userId = req.user._id;
+    const year = parseInt(req.params.year);
+    const month = parseInt(req.params.month);
 
-    const totalSalary = records.reduce((sum, r) => sum + parseFloat(r.salary), 0);
-    const totalTax = records.reduce((sum, r) => sum + parseFloat(r.tax), 0);
+    if (!year || !month || month < 1 || month > 12) {
+      return res.status(400).json({ error: 'Invalid year or month' });
+    }
 
-    res.status(200).json({ records, totalSalary, totalTax });
+    // Find payroll record for user and year
+    const payrollYear = await PayrollRecord.findOne({ userId, year });
+
+    if (!payrollYear) {
+      return res.status(404).json({ error: 'Payroll data for the year not found' });
+    }
+
+    // Find month record inside months array
+    const monthRecord = payrollYear.months.find(m => m.month === month);
+
+    if (!monthRecord) {
+      return res.status(404).json({ error: 'Payroll data for the month not found' });
+    }
+
+    // Calculate totals
+    const totalSalary = monthRecord.records.reduce((sum, r) => sum + parseFloat(r.salary.toString()), 0);
+    const totalTax = monthRecord.records.reduce((sum, r) => sum + parseFloat(r.tax.toString()), 0);
+
+    res.status(200).json({
+      year,
+      month,
+      records: monthRecord.records,
+      totalSalary,
+      totalTax
+    });
   } catch (err) {
-    console.error('Get Payroll Summary Error:', err);
-    res.status(500).json({ error: 'Failed to fetch payroll summary' });
+    console.error('Get Payroll by Year and Month Error:', err);
+    res.status(500).json({ error: 'Failed to fetch payroll records' });
   }
 };
 

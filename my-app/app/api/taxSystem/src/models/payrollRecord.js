@@ -1,12 +1,23 @@
-const mongoose = require('mongoose');
+ const mongoose = require('mongoose');
 
-const payrollRecordSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+const record = new mongoose.Schema({
   employeeName: { type: String, required: true },
   salary: { type: mongoose.Types.Decimal128, required: true },
   tax: { type: mongoose.Types.Decimal128, required: true },
-  description: { type: String }, // e.g. receipt URL
-  taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' }
+  description: { type: String },
+  taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
+  createdAt: { type: Date, default: Date.now },
+}, { _id: false });
+
+const payrollRecordSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  year: { type: Number, required: true },
+  months: [
+    {
+      month: { type: Number, required: true }, // 1 to 12
+      records: [record]
+    }
+  ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('PayrollRecord', payrollRecordSchema);

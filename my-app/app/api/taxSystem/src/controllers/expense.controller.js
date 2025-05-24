@@ -37,13 +37,27 @@ exports.createExpense = async (req, res) => {
 // Get all expenses for logged-in user
 exports.getExpenses = async (req, res) => {
   try {
-    const userId = req.user._id //"4a832c84c0ada085284abf30";
-    const expenses = await Expense.find({ userId }).sort({ paidDate: -1 });
-    res.json(expenses);
+    const userId = req.user._id;
+    const year = parseInt(req.params.year); // e.g. /api/expenses/2024
+
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ error: 'Valid year is required as a route parameter' });
+    }
+
+    const expenses = await Expense.find({
+      userId,
+      $expr: {
+        $eq: [{ $year: '$paidDate' }, year],
+      },
+    }).sort({ paidDate: -1 });
+
+    res.status(200).json({ expenses });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve expenses' });
+    console.error('Get Expenses Error:', error);
+    res.status(500).json({ error: 'Failed to fetch expense records' });
   }
 };
+
 
 // // Get single expense
 // exports.getExpenseById = async (req, res) => {
