@@ -33,19 +33,29 @@ exports.addIncome = async (req, res) => {
 };
 
 // Get all income records for logged-in user
-exports.getIncomes = async (req, res) => {
+ exports.getIncomes = async (req, res) => {
   try {
-    const userId = req.user._id
-    const incomes = await Income.find({ userId /*userId: "4a832c84c0ada085284abf30"*/  })
-      .populate('taxPeriodId')
-      .sort({ receivedDate: -1 });
+    const userId = req.user._id;
+    const year = parseInt(req.params.year); // e.g. /api/expenses/2024
+
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ error: 'Valid year is required as a route parameter' });
+    }
+
+    const incomes = await Income.find({
+      userId,
+      $expr: {
+        $eq: [{ $year: '$recievedDate' }, year],
+      },
+    }).sort({ recievedDate: -1 });
 
     res.status(200).json({ incomes });
   } catch (error) {
     console.error('Get Incomes Error:', error);
-    res.status(500).json({ error: 'Failed to fetch income records' });
+    res.status(500).json({ error: 'Failed to fetch expense records' });
   }
 };
+
 
 // Update an expense
 exports.updateIncome = async (req, res) => {

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { calculateProfitTax } = require('../controllers/profitTax.controller');
+const { profitTax } = require('../controllers/profitTax.controller');
 const {isLogin} = require('../middlewares/authMiddleware');
 
 
-router.get('/', isLogin, calculateProfitTax);
+router.get('/', isLogin, profitTax);
 
 module.exports = router

@@ -6,7 +6,7 @@ const upload = require('../utils/upload')
 
 // Protected routes (require user to be logged in)
 router.post('/', isLogin,  upload.single('receipt'), addIncome);
-router.get('/', isLogin , getIncomes);
+router.get('/:year', isLogin , getIncomes);
 router.put('/:id', isLogin, updateIncome)
 router.delete('/:id', isLogin, deleteIncome)
 
