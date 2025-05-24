@@ -9,8 +9,8 @@ exports.addIncome = async (req, res) => {
     const { amount, source, recievedDate } = req.body;
 
     const date = recievedDate ? new Date(recievedDate) : new Date();
-    const year = date.getFullYear(); // Extract the year
-    const taxPeriodId = await getOrCreateTaxPeriodId(date);
+     const year = date.getFullYear(); // Extract the year
+     const taxPeriodId = await getOrCreateTaxPeriodId(date);
 
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
@@ -36,17 +36,20 @@ exports.addIncome = async (req, res) => {
  exports.getIncomes = async (req, res) => {
   try {
     const userId = req.user._id;
-    const year = parseInt(req.params.year); // e.g. /api/incomes/2024
+   const year = parseInt(req.params.year); // e.g. /api/incomes/2024
 
-    if (!year || isNaN(year)) {
+     if (!year || isNaN(year)) {
       return res.status(400).json({ error: 'Valid year is required as a route parameter' });
     }
 
     const incomes = await Income.find({
       userId,
-      year, // match directly with the stored year
+     year, // match directly with the stored year
     }).sort({ date: -1 });
 
+    incomes.forEach(income => {
+      console.log("year at last" + income.year);
+    });
     res.status(200).json({ incomes });
   } catch (error) {
     console.error('Get Incomes Error:', error);
