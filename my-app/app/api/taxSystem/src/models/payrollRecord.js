@@ -15,7 +15,12 @@ const payrollRecordSchema = new mongoose.Schema({
   months: [
     {
       month: { type: Number, required: true }, // 1 to 12
-      records: [record]
+      records: [record],
+      taxStatus: { 
+          type: String, 
+          enum: ['pending', 'paid', 'overdue'], 
+          default: 'pending' 
+        }
     }
   ]
 }, { timestamps: true });
