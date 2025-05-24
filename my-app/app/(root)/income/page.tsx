@@ -1,9 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import {PlusIcon} from 'lucide-react'
+import { PlusIcon } from 'lucide-react';
 
-const getYear = (dateString: string) => {
+const getYear = (dateString) => {
   if (!dateString) return '';
   return new Date(dateString).getFullYear();
 };
@@ -18,36 +18,33 @@ const IncomePage = () => {
   const [receipt, setReceipt] = useState(null);
   const [selectedYear, setSelectedYear] = useState('');
 
+  const fetchIncomes = async (year) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:7000/api/incomes/${year}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIncomes(Array.isArray(data.incomes) ? data.incomes : []);
+      } else {
+        toast.error('Failed to fetch Incomes.');
+      }
+    } catch (error) {
+      console.error('Error fetching Incomes:', error);
+      toast.error('An error occurred while fetching Incomes.');
+    }
+  };
+
   // Fetch Incomes for selected year
   useEffect(() => {
-    if (!selectedYear) return;
-    const fetchIncomes = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(
-          `http://localhost:7000/api/incomes/${selectedYear}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data)
-          setIncomes(Array.isArray(data.incomes) ? data.incomes : []);
-        } else {
-          toast.error('Failed to fetch Incomes.');
-        }
-      } catch (error) {
-        console.error('Error fetching Incomes:', error);
-        toast.error('An error occurred while fetching Incomes.');
-      }
-    };
-    fetchIncomes();
+    if (selectedYear) {
+      fetchIncomes(selectedYear);
+    }
   }, [selectedYear]);
 
-  // Handle form submission to create a new Income
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
@@ -71,12 +68,13 @@ const IncomePage = () => {
 
       if (response.ok) {
         const newIncome = await response.json();
-        // If the new Income is in the selected year, add it to the list
+        // If the new income is in the selected year, add it to the list
         if (getYear(newIncome.paidDate).toString() === selectedYear.toString()) {
           setIncomes([newIncome, ...incomes]);
         }
         toast.success('Income added successfully!');
         resetForm();
+        fetchIncomes(selectedYear); // Refresh list after adding
       } else {
         toast.error('Failed to add Income.');
       }
@@ -93,7 +91,6 @@ const IncomePage = () => {
     setReceipt(null);
   };
 
-  // Handle deleting an Income
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
@@ -107,6 +104,7 @@ const IncomePage = () => {
       if (response.ok) {
         setIncomes(incomes.filter((income) => income._id !== id));
         toast.success('Income deleted successfully!');
+        fetchIncomes(selectedYear); // Refresh list after deletion
       } else {
         toast.error('Failed to delete Income.');
       }
@@ -209,8 +207,9 @@ const IncomePage = () => {
         </div>
         <button
           type="submit"
-          className="bg-black flex items-center justify-center a gap-2 hover:bg-gray-800 text-white rounded-lg px-4 py-2 mt-4"
-        ><PlusIcon className=' w-4 h-4 mr-2'/>
+          className="bg-black flex items-center justify-center gap-2 hover:bg-gray-800 text-white rounded-lg px-4 py-2 mt-4"
+        >
+          <PlusIcon className='w-4 h-4 mr-2'/>
           Add Income
         </button>
       </form>
@@ -227,17 +226,17 @@ const IncomePage = () => {
           </tr>
         </thead>
         <tbody>
-          {incomes.map((Income) => (
-            <tr key={Income._id} className="border-b">
-              <td className="py-2">{Income.source}</td>
-              <td className="py-2">${Income.amount}</td>
+          {incomes.map((income) => (
+            <tr key={income._id} className="border-b">
+              <td className="py-2">{income.source}</td>
+              <td className="py-2">${income.amount}</td>
               <td className="py-2">
-                {new Date(Income.paidDate).toLocaleDateString()}
+                {new Date(income.paidDate).toLocaleDateString()}
               </td>
               <td className="py-2">
-                {Income.receiptUrl && (
+                {income.receiptUrl && (
                   <a
-                    href={Income.receiptUrl}
+                    href={income.receiptUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500"
@@ -248,7 +247,7 @@ const IncomePage = () => {
               </td>
               <td className="py-2">
                 <button
-                  onClick={() => handleDelete(Income._id)}
+                  onClick={() => handleDelete(income._id)}
                   className="bg-red-500 text-white rounded-lg px-2 py-1"
                 >
                   Delete
@@ -258,12 +257,12 @@ const IncomePage = () => {
           ))}
         </tbody>
       </table>
-                    <button
-          type="button"
-          className="bg-black hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-2 mt-4"
-        >
-          proceed
-        </button>
+      <button
+        type="button"
+        className="bg-black hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-2 mt-4"
+      >
+        Proceed
+      </button>
     </div>
   );
 };

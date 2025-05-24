@@ -2,7 +2,7 @@
 
 const record = new mongoose.Schema({
   employeeName: { type: String, required: true },
-  salary: { type: mongoose.Types.Decimal128, required: true },
+  salary: { type: Number, required: true },
   tax: { type: mongoose.Types.Decimal128, required: true },
   description: { type: String },
   taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
