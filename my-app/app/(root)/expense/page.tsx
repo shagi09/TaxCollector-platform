@@ -19,10 +19,8 @@ const ExpensePage = () => {
   const [receipt, setReceipt] = useState(null);
   const [selectedYear, setSelectedYear] = useState('');
 
-  // Fetch expenses for selected year
-  useEffect(() => {
-    if (!selectedYear) return;
-    const fetchExpenses = async () => {
+
+      const fetchExpenses = async (year) => {
       try {
         const token = localStorage.getItem('token');
         const response = await fetch(
@@ -44,7 +42,12 @@ const ExpensePage = () => {
         toast.error('An error occurred while fetching expenses.');
       }
     };
-    fetchExpenses();
+
+  // Fetch expenses for selected year
+  useEffect(() => {
+    if (!selectedYear) return;
+    fetchExpenses(selectedYear)
+
   }, [selectedYear]);
 
   // Handle form submission to create a new expense
@@ -78,6 +81,7 @@ const ExpensePage = () => {
         }
         toast.success('Expense added successfully!');
         resetForm();
+        fetchExpenses(selectedYear)
       } else {
         toast.error('Failed to add expense.');
       }
@@ -109,6 +113,7 @@ const ExpensePage = () => {
       if (response.ok) {
         setExpenses(expenses.filter((expense) => expense._id !== id));
         toast.success('Expense deleted successfully!');
+        fetchExpenses(selectedYear)
       } else {
         toast.error('Failed to delete expense.');
       }

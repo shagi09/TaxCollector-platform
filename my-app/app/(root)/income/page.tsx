@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import {PlusIcon} from 'lucide-react'
 
 const getYear = (dateString: string) => {
   if (!dateString) return '';
@@ -10,7 +11,7 @@ const getYear = (dateString: string) => {
 const AVAILABLE_YEARS = [2021, 2022, 2023, 2024, 2025];
 
 const IncomePage = () => {
-  const [Incomes, setIncomes] = useState([]);
+  const [incomes, setIncomes] = useState([]);
   const [source, setSource] = useState('');
   const [amount, setAmount] = useState('');
   const [paidDate, setPaidDate] = useState('');
@@ -34,7 +35,7 @@ const IncomePage = () => {
         if (response.ok) {
           const data = await response.json();
           console.log(data)
-          setIncomes(Array.isArray(data.Incomes) ? data.Incomes : []);
+          setIncomes(Array.isArray(data.incomes) ? data.incomes : []);
         } else {
           toast.error('Failed to fetch Incomes.');
         }
@@ -72,7 +73,7 @@ const IncomePage = () => {
         const newIncome = await response.json();
         // If the new Income is in the selected year, add it to the list
         if (getYear(newIncome.paidDate).toString() === selectedYear.toString()) {
-          setIncomes([newIncome, ...Incomes]);
+          setIncomes([newIncome, ...incomes]);
         }
         toast.success('Income added successfully!');
         resetForm();
@@ -104,7 +105,7 @@ const IncomePage = () => {
       });
 
       if (response.ok) {
-        setIncomes(Incomes.filter((Income) => Income._id !== id));
+        setIncomes(incomes.filter((income) => income._id !== id));
         toast.success('Income deleted successfully!');
       } else {
         toast.error('Failed to delete Income.');
@@ -208,8 +209,8 @@ const IncomePage = () => {
         </div>
         <button
           type="submit"
-          className="bg-blue-500 text-white rounded-lg px-4 py-2 mt-4"
-        >
+          className="bg-black flex items-center justify-center a gap-2 hover:bg-gray-800 text-white rounded-lg px-4 py-2 mt-4"
+        ><PlusIcon className=' w-4 h-4 mr-2'/>
           Add Income
         </button>
       </form>
@@ -226,7 +227,7 @@ const IncomePage = () => {
           </tr>
         </thead>
         <tbody>
-          {Incomes.map((Income) => (
+          {incomes.map((Income) => (
             <tr key={Income._id} className="border-b">
               <td className="py-2">{Income.source}</td>
               <td className="py-2">${Income.amount}</td>
@@ -257,6 +258,12 @@ const IncomePage = () => {
           ))}
         </tbody>
       </table>
+                    <button
+          type="button"
+          className="bg-black hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-2 mt-4"
+        >
+          proceed
+        </button>
     </div>
   );
 };

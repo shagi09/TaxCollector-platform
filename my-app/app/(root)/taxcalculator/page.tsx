@@ -1,100 +1,97 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import {useRouter} from 'next/navigation'
+import { BarChart2, DollarSign, TrendingUp, ArrowDownCircle,DollarSignIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-const CalculatedTaxPage = () => {
-  const [totalIncome, setTotalIncome] = useState(0);
-  const [totalExpense, setTotalExpense] = useState(0);
-  const [calculatedTax, setCalculatedTax] = useState(0);
-
-  const router = useRouter()
+const ProfitTaxPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [taxData, setTaxData] = useState({
+    totalIncome: 0,
+    totalExpense: 0,
+    profit: 0,
+    tax: 0,
+  });
+  const router=useRouter()
 
   useEffect(() => {
-    const fetchCalculatedTax = async () => {
+    const fetchProfitTax = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('/api/calculatedtax');
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:7000/api/profitTax', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         if (response.ok) {
           const data = await response.json();
-          setTotalIncome(data.totalIncome);
-          setTotalExpense(data.totalExpense);
-          setCalculatedTax(data.calculatedTax);
+          setTaxData(data);
         } else {
-          toast.error('Failed to fetch calculated tax.');
+          toast.error('Failed to fetch profit tax data.');
         }
       } catch (error) {
-        console.error('Error fetching calculated tax:', error);
-        toast.error('An error occurred while fetching calculated tax.');
+        toast.error('An error occurred while fetching profit tax.');
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchCalculatedTax();
+    fetchProfitTax();
   }, []);
 
-  const handleClick = ()=>{
-    router.push('/payments')
-  }
-
   return (
-    <div className="container mx-auto p-6">
-      <motion.h1
-        className="text-4xl font-bold mb-6 text-center text-black"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Calculated Tax
-      </motion.h1>
+    <div className="container mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-8 text-center text-black flex items-center justify-center gap-2">
+        <BarChart2 className="w-8 h-8" /> Profit Tax Summary
+      </h1>
+      {loading ? (
+        <div className="flex justify-center items-center h-40">
+          <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <DollarSign className="w-10 h-10 text-green-500 mb-2" />
+            <div className="text-lg font-semibold text-gray-700">Total Income</div>
+            <div className="text-2xl font-bold text-green-700 mt-2">
+              ${taxData.totalIncome.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <ArrowDownCircle className="w-10 h-10 text-red-500 mb-2" />
+            <div className="text-lg font-semibold text-gray-700">Total Expenses</div>
+            <div className="text-2xl font-bold text-red-700 mt-2">
+              ${taxData.totalExpense.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <TrendingUp className="w-10 h-10 text-blue-500 mb-2" />
+            <div className="text-lg font-semibold text-gray-700">Profit</div>
+            <div className={`text-2xl font-bold mt-2 ${taxData.profit >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+              ${taxData.profit.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <BarChart2 className="w-10 h-10 text-purple-500 mb-2" />
+            <div className="text-lg font-semibold text-gray-700">Profit Tax</div>
+            <div className="text-2xl font-bold text-purple-700 mt-2">
+              ${taxData.tax.toLocaleString()}
+            </div>
+          </div>
+        </div>
 
-      <motion.div
-        className="bg-gradient-to-r from-gray-100 to-gray-200 p-6 rounded-lg shadow-lg mb-6"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Summary</h2>
-        <motion.p
-          className="text-lg mb-2"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <span className="font-bold text-gray-600">Total Income:</span> ${totalIncome.toFixed(2)}
-        </motion.p>
-        <motion.p
-          className="text-lg mb-2"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <span className="font-bold text-gray-600">Total Expense:</span> ${totalExpense.toFixed(2)}
-        </motion.p>
-        <motion.p
-          className="text-lg font-semibold"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <span className="font-bold text-gray-600">Tax Owed:</span> ${calculatedTax.toFixed(2)}
-        </motion.p>
-      </motion.div>
-
-      <motion.div
-        className="flex justify-center mt-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      )}
+      <div className='flex justify-center'>
         <button
-          className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105"
-          onClick={() => handleClick()}
-        >
-          Proceed to Payment
+          type="button"
+          onClick={()=>router.push('/payments')}
+          className="bg-black flex gap-4 justify-center items-center hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-4 mt-8 w-96"
+        ><DollarSignIcon className='w-4 h-4'/>
+          proceed to payment
         </button>
-      </motion.div>
-    </div>
+        </div>
+      </div>
   );
 };
 
-export default CalculatedTaxPage;
+export default ProfitTaxPage;
