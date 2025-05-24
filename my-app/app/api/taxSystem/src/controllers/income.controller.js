@@ -6,20 +6,20 @@ const { getOrCreateTaxPeriodId } = require('../utils/taxPeriodIdCreator'); // âœ
 // Add new income
 exports.addIncome = async (req, res) => {
   try {
-    const { amount, source, paidDate } = req.body;
+    const { amount, source, recievedDate } = req.body;
 
-    const date = paidDate ? new Date(paidDate) : new Date();
+    const date = recievedDate ? new Date(recievedDate) : new Date();
+    const year = date.getFullYear(); // Extract the year
     const taxPeriodId = await getOrCreateTaxPeriodId(date);
-    console.log("taxPeriodId", taxPeriodId )
+
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
-    
-
 
     const income = await Income.create({
       amount,
       source,
       date,
+      year,
       receiptUrl,
       taxPeriodId,
       userId: req.user._id //"4a832c84c0ada085284abf30"// Assuming authentication middleware sets this
@@ -36,7 +36,7 @@ exports.addIncome = async (req, res) => {
  exports.getIncomes = async (req, res) => {
   try {
     const userId = req.user._id;
-    const year = parseInt(req.params.year); // e.g. /api/expenses/2024
+    const year = parseInt(req.params.year); // e.g. /api/incomes/2024
 
     if (!year || isNaN(year)) {
       return res.status(400).json({ error: 'Valid year is required as a route parameter' });
@@ -44,17 +44,18 @@ exports.addIncome = async (req, res) => {
 
     const incomes = await Income.find({
       userId,
-      $expr: {
-        $eq: [{ $year: '$recievedDate' }, year],
-      },
-    }).sort({ recievedDate: -1 });
+      year, // match directly with the stored year
+    }).sort({ date: -1 });
 
     res.status(200).json({ incomes });
   } catch (error) {
     console.error('Get Incomes Error:', error);
-    res.status(500).json({ error: 'Failed to fetch expense records' });
+    res.status(500).json({ error: 'Failed to fetch income records' });
   }
 };
+
+
+
 
 
 // Update an expense

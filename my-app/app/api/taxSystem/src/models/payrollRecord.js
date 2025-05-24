@@ -7,7 +7,7 @@ const record = new mongoose.Schema({
   description: { type: String },
   taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
   createdAt: { type: Date, default: Date.now },
-}, { _id: false });
+}, { _id: true });
 
 const payrollRecordSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
