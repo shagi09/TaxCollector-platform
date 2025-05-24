@@ -12,6 +12,7 @@ exports.addPayrollRecord = async (req, res) => {
     const year = createdAt.getFullYear();
     const month = createdAt.getMonth() + 1; // JavaScript months are 0-indexed
 
+    console.log(month)
     const tax = calculatePayrollTax(salary);
 
     const newRecord = {
@@ -103,31 +104,39 @@ exports.getPayrollSummary = async (req, res) => {
 // Update a payroll record
 exports.updatePayroll = async (req, res) => {
   try {
-    const userId = req.user._id; // replace with req.user.id in production
-
-    const payroll = await PayrollRecord.findOne({ _id: req.params.id, userId });
-
-    if (!payroll) {
-      return res.status(404).json({ error: 'Payroll record not found or unauthorized' });
-    }
-
-    // Update only allowed fields
+    const userId = req.user._id;
+    const recordId = req.params.id;
     const { employeeName, salary, description } = req.body;
-    console.log(req.body)
 
-    if (employeeName !== undefined) payroll.employeeName = employeeName;
-    if (salary !== undefined) {
-      payroll.salary = salary;
-      payroll.tax = parseFloat(salary) * 0.1; // Recalculate tax if salary changes
+    console.log(recordId)
+    // Find the PayrollRecord doc that contains the record with recordId
+    const payrollDoc = await PayrollRecord.findOne({ userId, "months.records._id": recordId });
+
+    if (!payrollDoc) {
+      return res.status(404).json({ error: "Payroll record not found or unauthorized" });
     }
-    if (description !== undefined) payroll.description = description;
 
-    const updated = await payroll.save();
+    // Directly access the found record
+    const foundRecord = payrollDoc.months.flatMap(month => month.records).find(record => record._id.toString() === recordId);
 
-    res.json(updated);
+    if (!foundRecord) {
+      return res.status(404).json({ error: "Payroll record not found in any month" });
+    }
+
+    // Update fields if provided
+    if (employeeName !== undefined) foundRecord.employeeName = employeeName;
+    if (salary !== undefined) {
+      foundRecord.salary = salary;
+      foundRecord.tax = calculatePayrollTax(parseFloat(salary)); // Use your tax calculation logic
+    }
+    if (description !== undefined) foundRecord.description = description;
+
+    await payrollDoc.save();
+
+    res.json({ message: "Payroll record updated successfully", record: foundRecord });
   } catch (error) {
-    console.error('Update Payroll Error:', error);
-    res.status(500).json({ error: 'Failed to update payroll record' });
+    console.error("Update Payroll Error:", error);
+    res.status(500).json({ error: "Failed to update payroll record" });
   }
 };
 
@@ -149,3 +158,62 @@ exports.deletePayroll = async (req, res) => {
   }
 };
 
+
+exports.loadPreviousMonthRecordsCurrent = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth() + 1; // JS months: 0-11, so add 1
+
+    // Calculate previous month and possibly previous year
+    let prevMonth = month - 1;
+    let prevYear = year;
+    if (prevMonth === 0) {
+      prevMonth = 12;
+      prevYear = year - 1;
+    }
+
+    const payrollDoc = await PayrollRecord.findOne({ userId, year });
+    if (!payrollDoc) {
+      return res.status(404).json({ error: 'Payroll data for the current year not found' });
+    }
+
+    const currentMonthIndex = payrollDoc.months.findIndex(m => m.month === month);
+    if (currentMonthIndex !== -1 && payrollDoc.months[currentMonthIndex].records.length > 0) {
+      return res.status(400).json({ error: 'Current month already has payroll records' });
+    }
+
+    const prevMonthRecord = payrollDoc.months.find(m => m.month === prevMonth);
+    if (!prevMonthRecord || prevMonthRecord.records.length === 0) {
+      return res.status(404).json({ error: 'No payroll records found for previous month' });
+    }
+
+    // Copy previous month records to current month
+    const copiedRecords = prevMonthRecord.records.map(r => ({
+      employeeName: r.employeeName,
+      salary: r.salary,
+      tax: r.tax,
+      description: r.description,
+      taxPeriodId: r.taxPeriodId,
+      createdAt: new Date(),
+    }));
+
+    if (currentMonthIndex !== -1) {
+      payrollDoc.months[currentMonthIndex].records = copiedRecords;
+    } else {
+      payrollDoc.months.push({
+        month,
+        records: copiedRecords,
+      });
+    }
+
+    await payrollDoc.save();
+
+    res.status(200).json({ message: 'Previous month records loaded successfully', records: copiedRecords });
+  } catch (err) {
+    console.error('Load Previous Month Records Error:', err);
+    res.status(500).json({ error: 'Failed to load previous month records' });
+  }
+};

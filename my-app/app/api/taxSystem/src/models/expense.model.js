@@ -7,7 +7,9 @@ const expenseSchema = new mongoose.Schema({
   receiptUrl: { type: String },
   paidDate: { type: Date },
   notes: { type: String },
-  taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' }
+  taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
+  year: { type: Number, required: true }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Expense', expenseSchema);

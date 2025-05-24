@@ -10,6 +10,7 @@ exports.createExpense = async (req, res) => {
     const userId = req.user._id; // "4a832c84c0ada085284abf30"// mock user ID
 
     const date = paidDate ? new Date(paidDate) : new Date();
+    const year = date.getFullYear()
     const taxPeriodId = await getOrCreateTaxPeriodId(date);
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
@@ -22,7 +23,8 @@ exports.createExpense = async (req, res) => {
       receiptUrl,
       paidDate: date,
       notes,
-      taxPeriodId
+      taxPeriodId,
+      year
     });
 
     res.status(201).json(expense);
@@ -35,28 +37,26 @@ exports.createExpense = async (req, res) => {
 
 
 // Get all expenses for logged-in user
-exports.getExpenses = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const year = parseInt(req.params.year); // e.g. /api/expenses/2024
-
-    if (!year || isNaN(year)) {
-      return res.status(400).json({ error: 'Valid year is required as a route parameter' });
-    }
-
-    const expenses = await Expense.find({
-      userId,
-      $expr: {
-        $eq: [{ $year: '$paidDate' }, year],
-      },
-    }).sort({ paidDate: -1 });
-
-    res.status(200).json({ expenses });
-  } catch (error) {
-    console.error('Get Expenses Error:', error);
-    res.status(500).json({ error: 'Failed to fetch expense records' });
-  }
-};
+  exports.getExpenses = async (req, res) => {
+   try {
+     const userId = req.user._id;
+     const year = parseInt(req.params.year); // e.g. /api/incomes/2024
+ 
+     if (!year || isNaN(year)) {
+       return res.status(400).json({ error: 'Valid year is required as a route parameter' });
+     }
+ 
+     const expenses = await Expense.find({
+       userId,
+       year, // match directly with the stored year
+     }).sort({ date: -1 });
+ 
+     res.status(200).json({ expenses });
+   } catch (error) {
+     console.error('Get Expenses Error:', error);
+     res.status(500).json({ error: 'Failed to fetch Expense records' });
+   }
+ };
 
 
 // // Get single expense
@@ -118,3 +118,5 @@ exports.deleteExpense = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete expense' });
   }
 };
+
+

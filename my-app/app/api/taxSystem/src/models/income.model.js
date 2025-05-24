@@ -6,7 +6,8 @@ const incomeSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   receiptUrl: { type: String },
   receivedDate: { type: Date },
-  taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' }
+  taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
+  year: { type: Number, required: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Income', incomeSchema);
