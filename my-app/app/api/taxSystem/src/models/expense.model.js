@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const expenseSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String }, // Salary, Rent, Utility, etc.
-  amount: { type: mongoose.Types.Decimal128, required: true },
+  amount: { type: Number, required: true },
   receiptUrl: { type: String },
   paidDate: { type: Date },
   notes: { type: String },
