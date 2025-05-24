@@ -10,11 +10,18 @@ const ExpensePage = () => {
   const [notes, setNotes] = useState('');
   const [receipt, setReceipt] = useState(null);
 
+
+
   // Fetch all expenses
   useEffect(() => {
     const fetchExpenses = async () => {
-      try {
-        const response = await fetch('http://localhost:7000/api/expenses');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:7000/api/expenses', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
         if (response.ok) {
           const data = await response.json();
           setExpenses(data);
@@ -33,6 +40,7 @@ const ExpensePage = () => {
   // Handle form submission to create a new expense
   const handleSubmit = async (e) => {
     e.preventDefault();
+      const token=localStorage.getItem('token')
 
     const formData = new FormData();
     formData.append('type', type);
@@ -46,6 +54,9 @@ const ExpensePage = () => {
     try {
       const response = await fetch('http://localhost:7000/api/expenses', {
         method: 'POST',
+        headers: {
+        'Authorization': `Bearer ${token}`,
+      },
         body: formData,
       });
 
@@ -97,14 +108,54 @@ const ExpensePage = () => {
       {/* Add Expense Form */}
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="Type"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="border rounded-lg p-2"
-            required
-          />
+<select
+  value={type}
+  onChange={(e) => setType(e.target.value)}
+  className="border rounded-lg p-2"
+  required
+>
+  <option value="">Select Category</option>
+
+  <optgroup label="Operating Expenses">
+    <option value="Rent or Lease">Rent or Lease</option>
+    <option value="Utilities">Utilities</option>
+    <option value="Salaries and Wages">Salaries and Wages</option>
+    <option value="Office Supplies">Office Supplies</option>
+  </optgroup>
+
+  <optgroup label="Cost of Goods Sold (COGS)">
+    <option value="Raw Materials">Raw Materials</option>
+    <option value="Manufacturing Costs">Manufacturing Costs</option>
+  </optgroup>
+
+  <optgroup label="Marketing and Advertising">
+    <option value="Promotional Materials">Promotional Materials</option>
+    <option value="Marketing Campaigns">Marketing Campaigns</option>
+  </optgroup>
+
+  <optgroup label="Depreciation and Amortization">
+    <option value="Depreciation">Depreciation</option>
+    <option value="Amortization">Amortization</option>
+  </optgroup>
+
+  <optgroup label="Research and Development (R&D)">
+    <option value="Product Development">Product Development</option>
+  </optgroup>
+
+  <optgroup label="Administrative Expenses">
+    <option value="Legal and Professional Fees">Legal and Professional Fees</option>
+    <option value="Insurance">Insurance</option>
+  </optgroup>
+
+  <optgroup label="Travel and Meals">
+    <option value="Travel Expenses">Travel Expenses</option>
+  </optgroup>
+
+  <optgroup label="Interest Expense">
+    <option value="Loan Interest">Loan Interest</option>
+  </optgroup>
+</select>
+
           <input
             type="number"
             placeholder="Amount"

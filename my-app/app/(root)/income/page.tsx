@@ -1,31 +1,31 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
 
 const IncomePage = () => {
-  const [Incomes, setIncomes] = useState([]); // Initialize as an empty array
-  const [amount, setAmount] = useState('');
+const [Incomes, setIncomes] = useState<any[]>([]);
   const [source, setSource] = useState('');
+  const [amount, setAmount] = useState('');
   const [paidDate, setPaidDate] = useState('');
   const [receipt, setReceipt] = useState(null);
 
-  const router =useRouter()
+
 
   // Fetch all Incomes
   useEffect(() => {
     const fetchIncomes = async () => {
-      try {
-        const response = await fetch('http://localhost:7000/api/incomes');
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data.incomes)) {
-            setIncomes(data.incomes); // Ensure data is an array
-          } else {
-            console.error('Invalid API response:', data);
-            setIncomes([]); // Default to an empty array if response is invalid
-          }
-        } else {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:7000/api/incomes', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+if (response.ok) {
+  const data = await response.json();
+  console.log(data)
+  setIncomes(Array.isArray(data.incomes) ? data.incomes : []);
+} else {
           toast.error('Failed to fetch Incomes.');
         }
       } catch (error) {
@@ -40,6 +40,7 @@ const IncomePage = () => {
   // Handle form submission to create a new Income
   const handleSubmit = async (e) => {
     e.preventDefault();
+      const token=localStorage.getItem('token')
 
     const formData = new FormData();
     formData.append('source', source);
@@ -50,14 +51,17 @@ const IncomePage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:7000/api/incomes', {
+      const response = await fetch('http://localhost:7000/api/Incomes', {
         method: 'POST',
+        headers: {
+        'Authorization': `Bearer ${token}`,
+      },
         body: formData,
       });
 
       if (response.ok) {
         const newIncome = await response.json();
-        setIncomes([newIncome, ...Incomes]); // Add new Income to the list
+setIncomes((prev) => [newIncome, ...(Array.isArray(prev) ? prev : [])]);
         toast.success('Income added successfully!');
         resetForm();
       } else {
@@ -79,7 +83,7 @@ const IncomePage = () => {
   // Handle deleting an Income
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/incomes/${id}`, {
+      const response = await fetch(`http://localhost:7000/api/Incomes/${id}`, {
         method: 'DELETE',
       });
 
@@ -95,26 +99,60 @@ const IncomePage = () => {
     }
   };
 
-  const handleClick = ()=>{
-    router.push('/expense')
-
-  }
-
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Income</h1>
+      <h1 className="text-2xl font-bold mb-4">Income </h1>
 
       {/* Add Income Form */}
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="Source"
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-            className="border rounded-lg p-2"
-            required
-          />
+<select
+  value={source}
+  onChange={(e) => setSource(e.target.value)}
+  className="border rounded-lg p-2"
+  required
+>
+  <option value="">Select Income Source</option>
+
+  <optgroup label="Sales Revenue">
+    <option value="Product Sales">Product Sales</option>
+    <option value="Service Revenue">Service Revenue</option>
+  </optgroup>
+
+  <optgroup label="Recurring Revenue">
+    <option value="Subscription Fees">Subscription Fees</option>
+    <option value="Membership Dues">Membership Dues</option>
+  </optgroup>
+
+  <optgroup label="Investment Income">
+    <option value="Interest Income">Interest Income</option>
+    <option value="Dividends">Dividends</option>
+  </optgroup>
+
+  <optgroup label="Rental Income">
+    <option value="Property Rental">Property Rental</option>
+  </optgroup>
+
+  <optgroup label="Consulting Revenue">
+    <option value="Consulting Fees">Consulting Fees</option>
+  </optgroup>
+
+  <optgroup label="Grants and Donations">
+    <option value="Government Grants">Government Grants</option>
+    <option value="Charitable Donations">Charitable Donations</option>
+  </optgroup>
+
+  <optgroup label="Royalties">
+    <option value="Intellectual Property">Intellectual Property</option>
+  </optgroup>
+
+  <optgroup label="Other Income">
+    <option value="Gains from Asset Sales">Gains from Asset Sales</option>
+    <option value="Miscellaneous Income">Miscellaneous Income</option>
+  </optgroup>
+</select>
+
+
           <input
             type="number"
             placeholder="Amount"
@@ -147,22 +185,22 @@ const IncomePage = () => {
       <table className="min-w-full bg-white">
         <thead>
           <tr className="bg-gray-800 text-white">
-            <th className="py-2 px-4">Source</th>
-            <th className="py-2 px-4 ">Amount</th>
-            <th className="py-2 px-4">Paid Date</th>
-            <th className="py-2 px-4">Receipt</th>
-            <th className="py-2 px-4">Actions</th>
+            <th className="py-2">Source</th>
+            <th className="py-2">Amount</th>
+            <th className="py-2">Paid Date</th>
+            <th className="py-2">Receipt</th>
+            <th className="py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {(Array.isArray(Incomes) ? Incomes : []).map((Income,index) => (
-            <tr key={Income._id || index} className="border-b ">
-              <td className="py-2 px-4">{Income.source}</td>
-              <td className="py-2 px-4">${Income.amount}</td>
-              <td className="py-2 px-4">
+          {Incomes.map((Income) => (
+            <tr key={Income._id} className="border-b">
+              <td className="py-2">{Income.source}</td>
+              <td className="py-2">${Income.amount}</td>
+              <td className="py-2">
                 {new Date(Income.paidDate).toLocaleDateString()}
               </td>
-              <td className="py-2 px-4">
+              <td className="py-2">
                 {Income.receiptUrl && (
                   <a
                     href={Income.receiptUrl}
@@ -174,7 +212,7 @@ const IncomePage = () => {
                   </a>
                 )}
               </td>
-              <td className="py-2 px-4">
+              <td className="py-2">
                 <button
                   onClick={() => handleDelete(Income._id)}
                   className="bg-red-500 text-white rounded-lg px-2 py-1"
@@ -186,12 +224,6 @@ const IncomePage = () => {
           ))}
         </tbody>
       </table>
-      <div>
-        <button 
-        onClick={()=>handleClick()}
-        className="bg-green-500 text-white rounded-lg px-2 py-1 mt-10 ml-260">go to expense</button>
-
-      </div>
     </div>
   );
 };
