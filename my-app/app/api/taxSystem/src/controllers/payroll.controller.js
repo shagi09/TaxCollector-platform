@@ -60,7 +60,7 @@ exports.addPayrollRecord = async (req, res) => {
 };
 
 // Get payroll summary for a tax period
-exports.getPayrollSummary = async (req, res) => {
+ exports.getPayrollSummary = async (req, res) => {
   try {
     const userId = req.user._id;
     const year = parseInt(req.params.year);
@@ -72,14 +72,12 @@ exports.getPayrollSummary = async (req, res) => {
 
     // Find payroll record for user and year
     const payrollYear = await PayrollRecord.findOne({ userId, year });
-
     if (!payrollYear) {
       return res.status(404).json({ error: 'Payroll data for the year not found' });
     }
 
     // Find month record inside months array
     const monthRecord = payrollYear.months.find(m => m.month === month);
-
     if (!monthRecord) {
       return res.status(404).json({ error: 'Payroll data for the month not found' });
     }
@@ -88,29 +86,50 @@ exports.getPayrollSummary = async (req, res) => {
     const totalSalary = monthRecord.records.reduce((sum, r) => sum + parseFloat(r.salary.toString()), 0);
     const totalTax = monthRecord.records.reduce((sum, r) => sum + parseFloat(r.tax.toString()), 0);
 
-    let nextMonth = month + 1;
-    let dueYear = year;
-    if (nextMonth > 12) {
-      nextMonth = 1;
-      dueYear += 1;
-    }
-  const dueDateObj = new Date(dueYear, nextMonth - 1, 30, 12); // 12 noon prevents timezone shift
-  const dueDate = dueDateObj.toISOString().split('T')[0]; // "2025-06-30"
+    // Calculate due date (30th of the next month)
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const dueYear = month === 12 ? year + 1 : year;
+    const dueDateObj = new Date(dueYear, nextMonth - 1, 30, 12); // 30th of next month at noon
+    const dueDate = dueDateObj.toISOString().split('T')[0];
 
- 
+    // Determine if overdue and calculate penalty if applicable
+    const now = new Date();
+
+    if (monthRecord.taxStatus !== 'paid' && now > dueDateObj) {
+      monthRecord.taxStatus = 'overdue';
+
+      const monthsLate = Math.floor(
+        (now.getFullYear() - dueDateObj.getFullYear()) * 12 +
+        (now.getMonth() - dueDateObj.getMonth())
+      );
+
+      monthRecord.penalty = +(totalTax * 0.05 * monthsLate).toFixed(2);
+
+      await payrollYear.save(); // Persist changes to DB
+    } else if (monthRecord.taxStatus !== 'paid') {
+      // If not overdue and not paid, ensure taxStatus is pending and penalty is 0
+      monthRecord.taxStatus = 'pending';
+      monthRecord.penalty = 0;
+
+      await payrollYear.save();
+    }
+
     res.status(200).json({
       year,
       month,
       records: monthRecord.records,
       totalSalary,
       totalTax,
-      dueDate
+      dueDate,
+      taxStatus: monthRecord.taxStatus,
+      penalty: monthRecord.penalty || 0
     });
   } catch (err) {
     console.error('Get Payroll by Year and Month Error:', err);
     res.status(500).json({ error: 'Failed to fetch payroll records' });
   }
 };
+
 
 // Update a payroll record
 exports.updatePayroll = async (req, res) => {

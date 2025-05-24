@@ -4,6 +4,6 @@ const { profitTax } = require('../controllers/profitTax.controller');
 const {isLogin} = require('../middlewares/authMiddleware');
 
 
-router.get('/', isLogin, profitTax);
+router.get('/:year', isLogin, profitTax);
 
 module.exports = router
