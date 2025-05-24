@@ -5,19 +5,25 @@ const { calculateProfitTax } = require('../utils/calculateTax')
  exports.profitTax = async (req, res) => {
   try {
     const userId = req.user._id;
+    const year = parseInt(req.params.year);
 
-    // Fetch all incomes for user and sum them
-    const incomes = await Income.find({ userId });
+    if (!year || isNaN(year)) {
+      return res.status(400).json({ error: 'Invalid or missing year parameter' });
+    }
+
+    // Fetch incomes for user and year
+    const incomes = await Income.find({ userId, year });
     const totalIncome = incomes.reduce((sum, income) => sum + Number(income.amount || 0), 0);
 
-    // Fetch all expenses for user and sum them
-    const expenses = await Expense.find({ userId });
+    // Fetch expenses for user and year
+    const expenses = await Expense.find({ userId, year });
     const totalExpense = expenses.reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
 
     const profit = totalIncome - totalExpense;
     const tax = calculateProfitTax(profit);
 
     res.json({
+      year,
       totalIncome,
       totalExpense,
       profit,
@@ -29,4 +35,5 @@ const { calculateProfitTax } = require('../utils/calculateTax')
     res.status(500).json({ error: 'Failed to calculate profit tax' });
   }
 };
+
 
