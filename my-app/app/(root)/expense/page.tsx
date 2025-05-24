@@ -1,6 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import {PlusIcon} from 'lucide-react'
+
+const getYear = (dateString: string) => {
+  if (!dateString) return '';
+  return new Date(dateString).getFullYear();
+};
+
+const AVAILABLE_YEARS = [2021, 2022, 2023, 2024, 2025];
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
@@ -9,22 +17,25 @@ const ExpensePage = () => {
   const [paidDate, setPaidDate] = useState('');
   const [notes, setNotes] = useState('');
   const [receipt, setReceipt] = useState(null);
+  const [selectedYear, setSelectedYear] = useState('');
 
-
-
-  // Fetch all expenses
+  // Fetch expenses for selected year
   useEffect(() => {
+    if (!selectedYear) return;
     const fetchExpenses = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:7000/api/expenses', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `http://localhost:7000/api/expenses/${selectedYear}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
         if (response.ok) {
           const data = await response.json();
-          setExpenses(data);
+          setExpenses(Array.isArray(data.expenses) ? data.expenses : []);
         } else {
           toast.error('Failed to fetch expenses.');
         }
@@ -33,14 +44,13 @@ const ExpensePage = () => {
         toast.error('An error occurred while fetching expenses.');
       }
     };
-
     fetchExpenses();
-  }, []);
+  }, [selectedYear]);
 
   // Handle form submission to create a new expense
   const handleSubmit = async (e) => {
     e.preventDefault();
-      const token=localStorage.getItem('token')
+    const token = localStorage.getItem('token');
 
     const formData = new FormData();
     formData.append('type', type);
@@ -55,14 +65,17 @@ const ExpensePage = () => {
       const response = await fetch('http://localhost:7000/api/expenses', {
         method: 'POST',
         headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
       });
 
       if (response.ok) {
         const newExpense = await response.json();
-        setExpenses([newExpense, ...expenses]); // Add new expense to the list
+        // If the new expense is in the selected year, add it to the list
+        if (getYear(newExpense.paidDate).toString() === selectedYear.toString()) {
+          setExpenses([newExpense, ...expenses]);
+        }
         toast.success('Expense added successfully!');
         resetForm();
       } else {
@@ -85,8 +98,12 @@ const ExpensePage = () => {
   // Handle deleting an expense
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:7000/api/expenses/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -103,58 +120,67 @@ const ExpensePage = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Expense </h1>
+      <h1 className="text-2xl font-bold mb-4">Expense</h1>
+
+      {/* Year Selector */}
+      <div className="mb-4">
+        <label className="mr-2 font-semibold">Select Year:</label>
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          className="border rounded-lg p-2"
+        >
+          <option value="">Select year</option>
+          {AVAILABLE_YEARS.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Add Expense Form */}
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<select
-  value={type}
-  onChange={(e) => setType(e.target.value)}
-  className="border rounded-lg p-2"
-  required
->
-  <option value="">Select Category</option>
-
-  <optgroup label="Operating Expenses">
-    <option value="Rent or Lease">Rent or Lease</option>
-    <option value="Utilities">Utilities</option>
-    <option value="Salaries and Wages">Salaries and Wages</option>
-    <option value="Office Supplies">Office Supplies</option>
-  </optgroup>
-
-  <optgroup label="Cost of Goods Sold (COGS)">
-    <option value="Raw Materials">Raw Materials</option>
-    <option value="Manufacturing Costs">Manufacturing Costs</option>
-  </optgroup>
-
-  <optgroup label="Marketing and Advertising">
-    <option value="Promotional Materials">Promotional Materials</option>
-    <option value="Marketing Campaigns">Marketing Campaigns</option>
-  </optgroup>
-
-  <optgroup label="Depreciation and Amortization">
-    <option value="Depreciation">Depreciation</option>
-    <option value="Amortization">Amortization</option>
-  </optgroup>
-
-  <optgroup label="Research and Development (R&D)">
-    <option value="Product Development">Product Development</option>
-  </optgroup>
-
-  <optgroup label="Administrative Expenses">
-    <option value="Legal and Professional Fees">Legal and Professional Fees</option>
-    <option value="Insurance">Insurance</option>
-  </optgroup>
-
-  <optgroup label="Travel and Meals">
-    <option value="Travel Expenses">Travel Expenses</option>
-  </optgroup>
-
-  <optgroup label="Interest Expense">
-    <option value="Loan Interest">Loan Interest</option>
-  </optgroup>
-</select>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="border rounded-lg p-2"
+            required
+          >
+            <option value="">Select Category</option>
+            <optgroup label="Operating Expenses">
+              <option value="Rent or Lease">Rent or Lease</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Salaries and Wages">Salaries and Wages</option>
+              <option value="Office Supplies">Office Supplies</option>
+            </optgroup>
+            <optgroup label="Cost of Goods Sold (COGS)">
+              <option value="Raw Materials">Raw Materials</option>
+              <option value="Manufacturing Costs">Manufacturing Costs</option>
+            </optgroup>
+            <optgroup label="Marketing and Advertising">
+              <option value="Promotional Materials">Promotional Materials</option>
+              <option value="Marketing Campaigns">Marketing Campaigns</option>
+            </optgroup>
+            <optgroup label="Depreciation and Amortization">
+              <option value="Depreciation">Depreciation</option>
+              <option value="Amortization">Amortization</option>
+            </optgroup>
+            <optgroup label="Research and Development (R&D)">
+              <option value="Product Development">Product Development</option>
+            </optgroup>
+            <optgroup label="Administrative Expenses">
+              <option value="Legal and Professional Fees">Legal and Professional Fees</option>
+              <option value="Insurance">Insurance</option>
+            </optgroup>
+            <optgroup label="Travel and Meals">
+              <option value="Travel Expenses">Travel Expenses</option>
+            </optgroup>
+            <optgroup label="Interest Expense">
+              <option value="Loan Interest">Loan Interest</option>
+            </optgroup>
+          </select>
 
           <input
             type="number"
@@ -184,8 +210,8 @@ const ExpensePage = () => {
         </div>
         <button
           type="submit"
-          className="bg-blue-500 text-white rounded-lg px-4 py-2 mt-4"
-        >
+          className="bg-black flex items-center justify-center a gap-2 hover:bg-gray-800 text-white rounded-lg px-4 py-2 mt-4"
+        ><PlusIcon className=' w-4 h-4 mr-2'/>
           Add Expense
         </button>
       </form>
@@ -235,6 +261,12 @@ const ExpensePage = () => {
           ))}
         </tbody>
       </table>
+              <button
+          type="button"
+          className="bg-black hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-2 mt-4"
+        >
+          proceed
+        </button>
     </div>
   );
 };

@@ -2,30 +2,40 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
+const getYear = (dateString: string) => {
+  if (!dateString) return '';
+  return new Date(dateString).getFullYear();
+};
+
+const AVAILABLE_YEARS = [2021, 2022, 2023, 2024, 2025];
+
 const IncomePage = () => {
-const [Incomes, setIncomes] = useState<any[]>([]);
+  const [Incomes, setIncomes] = useState([]);
   const [source, setSource] = useState('');
   const [amount, setAmount] = useState('');
   const [paidDate, setPaidDate] = useState('');
   const [receipt, setReceipt] = useState(null);
+  const [selectedYear, setSelectedYear] = useState('');
 
-
-
-  // Fetch all Incomes
+  // Fetch Incomes for selected year
   useEffect(() => {
+    if (!selectedYear) return;
     const fetchIncomes = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:7000/api/incomes', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-if (response.ok) {
-  const data = await response.json();
-  console.log(data)
-  setIncomes(Array.isArray(data.incomes) ? data.incomes : []);
-} else {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `http://localhost:7000/api/incomes/${selectedYear}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data)
+          setIncomes(Array.isArray(data.Incomes) ? data.Incomes : []);
+        } else {
           toast.error('Failed to fetch Incomes.');
         }
       } catch (error) {
@@ -33,14 +43,13 @@ if (response.ok) {
         toast.error('An error occurred while fetching Incomes.');
       }
     };
-
     fetchIncomes();
-  }, []);
+  }, [selectedYear]);
 
   // Handle form submission to create a new Income
   const handleSubmit = async (e) => {
     e.preventDefault();
-      const token=localStorage.getItem('token')
+    const token = localStorage.getItem('token');
 
     const formData = new FormData();
     formData.append('source', source);
@@ -51,17 +60,20 @@ if (response.ok) {
     }
 
     try {
-      const response = await fetch('http://localhost:7000/api/Incomes', {
+      const response = await fetch('http://localhost:7000/api/incomes', {
         method: 'POST',
         headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
       });
 
       if (response.ok) {
         const newIncome = await response.json();
-setIncomes((prev) => [newIncome, ...(Array.isArray(prev) ? prev : [])]);
+        // If the new Income is in the selected year, add it to the list
+        if (getYear(newIncome.paidDate).toString() === selectedYear.toString()) {
+          setIncomes([newIncome, ...Incomes]);
+        }
         toast.success('Income added successfully!');
         resetForm();
       } else {
@@ -83,8 +95,12 @@ setIncomes((prev) => [newIncome, ...(Array.isArray(prev) ? prev : [])]);
   // Handle deleting an Income
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/Incomes/${id}`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:7000/api/incomes/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -101,7 +117,24 @@ setIncomes((prev) => [newIncome, ...(Array.isArray(prev) ? prev : [])]);
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Income </h1>
+      <h1 className="text-2xl font-bold mb-4">Income</h1>
+
+      {/* Year Selector */}
+      <div className="mb-4">
+        <label className="mr-2 font-semibold">Select Year:</label>
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          className="border rounded-lg p-2"
+        >
+          <option value="">Select year</option>
+          {AVAILABLE_YEARS.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Add Income Form */}
       <form onSubmit={handleSubmit} className="mb-6">
