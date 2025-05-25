@@ -8,8 +8,8 @@ const expenseSchema = new mongoose.Schema({
   paidDate: { type: Date },
   notes: { type: String },
   taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
-  year: { type: Number, required: true }
-
+  year: { type: Number, required: true },
+  vat: { type: mongoose.Types.Decimal128, default: 0.0 }, // ← Added VAT field
 }, { timestamps: true });
 
 module.exports = mongoose.model('Expense', expenseSchema);
