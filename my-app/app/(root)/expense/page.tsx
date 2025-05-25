@@ -245,7 +245,7 @@ const ExpensePage = () => {
               <td className="py-2">
                 {expense.receiptUrl && (
                   <a
-                    href={expense.receiptUrl}
+                    href={`http://localhost:7000/api/${expense.receiptUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500"
