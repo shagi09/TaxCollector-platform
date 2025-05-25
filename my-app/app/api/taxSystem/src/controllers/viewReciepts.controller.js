@@ -7,7 +7,7 @@ const path = require('path');
     }
 
     // Build the full file path
-    const receiptPath = path.join(__dirname, '..', 'utils', 'uploads', 'receipts', filename);
+    const receiptPath = path.join(__dirname, '..', 'uploads', 'receipts', filename);
     console.log(__dirname)
     console.log("receiptPath" + receiptPath)
     // Send the file if it exists
