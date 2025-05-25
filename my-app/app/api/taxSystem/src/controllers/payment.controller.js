@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 
-module.exports = async (req, res) => {
+exports.payment = async (req, res) => {
   console.log(req.body)
   try {
     const { amount, email, firstName, lastName, phone } = req.body;

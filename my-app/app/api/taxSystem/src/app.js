@@ -24,6 +24,7 @@ app.use('/api/auditor', require('./routes/auditor.routes'))
 app.use('/api/official', require('./routes/official.routes'))
 app.use('/api/profitTax', require('./routes/profitTax.routes'))
 app.use('/api/receipt', require('./routes/reciept.routes'))
+app.use('/api/payments', require('./routes/payment.routes'))
 
 // Root test
 app.get('/', (req, res) => {
