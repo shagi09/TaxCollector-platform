@@ -1,153 +1,125 @@
 'use client';
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
+import {toast} from 'react-hot-toast'
+
+
 
 export default function PaymentInterface() {
-  const [selectedTaxpayer, setSelectedTaxpayer] = useState('');
-  const [taxType, setTaxType] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card');
   const [amount, setAmount] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentComplete, setPaymentComplete] = useState(false);
 
-  const taxTypes = [
-    { value: 'property', label: 'Property Tax', rate: 0.015, description: 'Annual property tax assessment' },
-    { value: 'income', label: 'Income Tax', rate: 0.25, description: 'Personal income tax' },
-    { value: 'business', label: 'Business Tax', rate: 0.08, description: 'Business license and operations tax' },
-    { value: 'corporate', label: 'Corporate Tax', rate: 0.21, description: 'Corporate income tax' },
-  ];
+  const [redirectUrl, setRedirectUrl] = useState('');
 
-  const outstandingTaxes = [
-    { type: 'Property Tax', amount: 2450, dueDate: '2024-03-15', penalty: 125 },
-    { type: 'Income Tax', amount: 1200, dueDate: '2024-04-15', penalty: 0 },
-    { type: 'Business License', amount: 850, dueDate: '2024-02-28', penalty: 85 },
-  ];
+  useEffect(()=>{
+    const storedAmount=localStorage.getItem('profitTax')
+    if(storedAmount){
+      setAmount(storedAmount)
+    }
 
-  const calculateTax = (income: number, type: string) => {
-    const taxTypeObj = taxTypes.find((t) => t.value === type);
-    if (!taxTypeObj) return 0;
-    return income * taxTypeObj.rate;
-  };
+  },[])
 
-  const handlePayment = async () => {
+  const handlePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const res = await fetch('http://localhost:7000/api/payments/chapa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          email,
+          firstName,
+          lastName,
+          phone,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.paymentUrl) {
+        setRedirectUrl(data.paymentUrl);
+        setTimeout(() => {
+          window.location.href = data.paymentUrl;
+        }, 1500);
+      } else {
+        toast.error(data.message || 'Payment initialization failed');
+      }
+    } catch (err) {
+      toast.error('Payment initialization failed');
+    }
     setIsProcessing(false);
-    setPaymentComplete(true);
   };
-
-  if (paymentComplete) {
-    return (
-      <div className="max-w-2xl mx-auto mt-10">
-        <div className="bg-white shadow-lg rounded-lg p-8 text-center">
-          <div className="flex justify-center mb-4">
-            <svg className="w-16 h-16 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2l4-4" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-green-600 mb-2">Payment Successful!</h2>
-          <p className="text-gray-600 mb-4">Your tax payment has been processed successfully.</p>
-          <div className="bg-gray-50 p-4 rounded-lg mb-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Transaction ID:</span>
-                <div>TXN-{Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
-              </div>
-              <div>
-                <span className="font-medium">Amount Paid:</span>
-                <div>${amount}</div>
-              </div>
-              <div>
-                <span className="font-medium">Payment Method:</span>
-                <div>
-                  {paymentMethod === 'card'
-                    ? 'Credit Card'
-                    : paymentMethod === 'bank'
-                    ? 'Bank Transfer'
-                    : 'Check'}
-                </div>
-              </div>
-              <div>
-                <span className="font-medium">Date:</span>
-                <div>{new Date().toLocaleDateString()}</div>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-4 justify-center">
-            <button className="border px-4 py-2 rounded hover:bg-gray-100">Download Receipt</button>
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              onClick={() => setPaymentComplete(false)}
-            >
-              Make Another Payment
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 mt-10">
-      <div>
-        <h2 className="text-2xl font-bold">Tax Payment System</h2>
-        <p className="text-gray-500">Calculate and pay your taxes online</p>
-      </div>
-
-      <div className="grid gap-8 md:grid-cols-2">
-        {/* Tax Calculator */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-lg font-semibold mb-1">
-              <span>🧮</span> Tax Calculator
-            </div>
-            <div className="text-gray-500 text-sm">Calculate your tax liability</div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block font-medium mb-1">Taxpayer ID</label>
-              <input
-                className="border rounded px-3 py-2 w-full"
-                placeholder="Enter your taxpayer ID"
-                value={selectedTaxpayer}
-                onChange={(e) => setSelectedTaxpayer(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1">Tax Type</label>
-              <select
-                className="border rounded px-3 py-2 w-full"
-                value={taxType}
-                onChange={(e) => setTaxType(e.target.value)}
-              >
-                <option value="">Select tax type</option>
-                {taxTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label} ({type.rate * 100}%)
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block font-medium mb-1">Taxable Amount</label>
-              <input
-                className="border rounded px-3 py-2 w-full"
-                type="number"
-                placeholder="Enter taxable amount"
-                onChange={(e) => {
-                  const calculated = calculateTax(Number.parseFloat(e.target.value) || 0, taxType);
-                  setAmount(calculated.toFixed(2));
-                }}
-              />
-            </div>
-            {amount && (
-              <div className="bg-blue-50 p-4 rounded-lg mt-2">
-                <div className="text-sm font-medium text-blue-900">Calculated Tax</div>
-                <div className="text-2xl font-bold text-blue-900">${amount}</div>
-              </div>
-            )}
+    <div className="max-w-xl mx-auto mt-10 bg-white shadow rounded-lg p-8">
+      <h2 className="text-2xl font-bold mb-6">Pay Your Tax with Chapa</h2>
+      {redirectUrl ? (
+        <div className="text-center py-10">
+          <div className="text-green-600 text-xl font-semibold mb-2">Redirecting to payment...</div>
+          <div>
+            If you are not redirected,{' '}
+            <a href={redirectUrl} className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
+              click here
+            </a>
+            .
           </div>
         </div>
-      </div>
-
-      
+      ) : (
+        <form onSubmit={handlePayment} className="space-y-4">
+          <div>
+            <label className="block font-medium mb-1">First Name</label>
+            <input
+              className="border rounded px-3 py-2 w-full"
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Last Name</label>
+            <input
+              className="border rounded px-3 py-2 w-full"
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Email</label>
+            <input
+              className="border rounded px-3 py-2 w-full"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Phone Number</label>
+            <input
+              className="border rounded px-3 py-2 w-full"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              required
+            />
+          </div>
+          {amount && (
+            <div className="bg-blue-50 p-4 rounded-lg mt-2">
+              <div className="text-sm font-medium text-blue-900">Calculated Tax</div>
+              <div className="text-2xl font-bold text-blue-900">ETB {amount}</div>
+            </div>
+          )}
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-3 rounded-lg font-semibold mt-2 hover:bg-gray-500"
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Processing...' : 'Pay with Chapa'}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
