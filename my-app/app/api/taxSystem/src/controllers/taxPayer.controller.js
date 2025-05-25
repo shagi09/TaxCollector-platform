@@ -44,7 +44,6 @@ exports.loginTaxPayer = async (req, res) => {
 };
 
 exports.logoutTaxPayer = async (req, res) => {
-  // You can just send a success response for now
   res.status(200).json({ message: "Logged out" });
 };
 
@@ -135,5 +134,22 @@ exports.changePassword = async (req, res) => {
   } catch (err) {
     console.error('Error changing password:', err);
     res.status(500).json({ error: 'Server error while changing password' });
+  }
+};
+
+exports.getTaxPayerProfile = async (req, res) => {
+  try {
+    const taxPayerId = req.user._id; // Assumes you're using middleware to set req.user from JWT
+
+    const taxPayer = await TaxPayer.findById(taxPayerId).select('-passwordHash');
+
+    if (!taxPayer) {
+      return res.status(404).json({ error: 'Taxpayer not found' });
+    }
+
+    res.status(200).json(taxPayer);
+  } catch (error) {
+    console.error('Get Taxpayer Profile Error:', error);
+    res.status(500).json({ error: 'Server error fetching profile' });
   }
 };

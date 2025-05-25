@@ -35,6 +35,73 @@ exports.registerAuditor = async (req, res) => {
   }
 };
 
+exports.getAllAuditors = async (req, res) => {
+  try {
+    const auditors = await Auditor.find().select('-passwordHash');
+    res.status(200).json(auditors);
+  } catch (err) {
+    console.error('Get Auditors Error:', err);
+    res.status(500).json({ error: 'Server error while fetching auditors' });
+  }
+};
+
+exports.getAuditorById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const auditor = await Auditor.findById(id).select('-passwordHash');
+
+    if (!auditor) {
+      return res.status(404).json({ error: 'Auditor not found' });
+    }
+
+    res.status(200).json(auditor);
+  } catch (err) {
+    console.error('Get Auditor Error:', err);
+    res.status(500).json({ error: 'Server error while fetching auditor' });
+  }
+};
+
+exports.updateAuditor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password } = req.body;
+
+    const auditor = await Auditor.findById(id);
+    if (!auditor) {
+      return res.status(404).json({ error: 'Auditor not found' });
+    }
+
+    if (name !== undefined) auditor.name = name;
+    if (email !== undefined) auditor.email = email;
+    if (password !== undefined) auditor.passwordHash = await bcrypt.hash(password, 10);
+
+    const updated = await auditor.save();
+    res.status(200).json({ message: 'Auditor updated', auditorId: updated._id });
+  } catch (err) {
+    console.error('Update Auditor Error:', err);
+    res.status(500).json({ error: 'Server error while updating auditor' });
+  }
+};
+
+
+exports.deleteAuditor = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Auditor.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Auditor not found' });
+    }
+
+    res.status(200).json({ message: 'Auditor deleted successfully' });
+  } catch (err) {
+    console.error('Delete Auditor Error:', err);
+    res.status(500).json({ error: 'Server error while deleting auditor' });
+  }
+};
+
+
+
 exports.loginOfficial = async (req, res) => {
   try {
     const { email, password } = req.body;
