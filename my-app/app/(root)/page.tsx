@@ -15,16 +15,8 @@ import {
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ChartTooltip, Legend, ArcElement);
 
-const pieData = {
-  labels: ["Paid", "Owed"],
-  datasets: [
-    {
-      data: [1200, 3000],
-      backgroundColor: ["#22c55e", "#ef4444"],
-      borderWidth: 0,
-    },
-  ],
-};
+
+
 
 const barOptions = {
   responsive: true,
@@ -146,6 +138,17 @@ export default function Dashboard() {
       },
     ],
   };
+
+  const pieData = {
+  labels: ["profit tax", "payroll tax"],
+  datasets: [
+    {
+      data: [currentProfitTax , currentPayrollTax],
+      backgroundColor: ["#22c55e", "#ef4444"],
+      borderWidth: 0,
+    },
+  ],
+};
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

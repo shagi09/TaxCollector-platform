@@ -20,7 +20,7 @@ const DashboardSidebar = () => {
               className="flex items-center gap-2 p-4 w-full text-left rounded hover:bg-gray-700 transition"
             >
               <FiUsers className="text-xl" />
-              <span>Employees</span>
+              <span>Payroll</span>
             </Link>
           </li>
           <li>
