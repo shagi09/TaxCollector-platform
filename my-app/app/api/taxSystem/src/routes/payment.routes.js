@@ -2,10 +2,16 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/payment.controller');
 
-// POST request to initialize payment
-router.post('/pay/:payrollMonthId', paymentController.payment);
+// Payroll
+router.post('/payroll/:payrollMonthId', paymentController.payrollPayment);
+router.get('/transactions/:id', paymentController.getPayrollReceipt);
 
-// GET request to retrieve the transaction receipt
-router.get('/transactions/:id', paymentController.getTransactionReceipt);
+// VAT
+router.post('/vat', paymentController.vatPayment);
+router.get('/transactions/vat/:id', paymentController.getVatReceipt);
+
+// Profit Tax
+router.post('/profit-tax', paymentController.profitTaxPayment);
+router.get('/transactions/profit/:id', paymentController.getProfitReceipt);
 
 module.exports = router;
