@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link';
 import { FiUsers, FiCreditCard, FiTrendingUp, FiTrendingDown, FiLogOut } from 'react-icons/fi';
-import { TbTax } from "react-icons/tb";
+import { TbTax,TbReceiptTax } from "react-icons/tb";
 
 const DashboardSidebar = () => {
   const handleLogout = () => {
@@ -57,6 +57,15 @@ const DashboardSidebar = () => {
             >
               <FiTrendingDown className="text-xl" />
               <span>Expense</span>
+            </Link>
+          </li>
+                    <li>
+            <Link
+              href="/vat"
+              className="flex items-center gap-2 p-4 w-full text-left rounded hover:bg-gray-700 transition"
+            >
+              <TbReceiptTax className="text-xl" />
+              <span>VAT</span>
             </Link>
           </li>
         </ul>

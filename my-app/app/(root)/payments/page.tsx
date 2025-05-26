@@ -1,67 +1,67 @@
-'use client';
-import React, {useEffect, useState } from 'react';
-import {toast} from 'react-hot-toast'
-
-
+'use client'
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 export default function PaymentInterface() {
+  const [taxType, setTaxType] = useState('profit'); // 'profit' or 'vat'
   const [amount, setAmount] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-
   const [redirectUrl, setRedirectUrl] = useState('');
 
-  useEffect(()=>{
-    const storedAmount=localStorage.getItem('profitTax')
-    if(storedAmount){
-      setAmount(storedAmount)
+  useEffect(() => {
+    // Fetch the correct amount based on selected tax type
+    if (taxType === 'profit') {
+      const storedAmount = localStorage.getItem('profitTax');
+      if (storedAmount) setAmount(storedAmount);
+    } else if (taxType === 'vat') {
+      const storedNetVAT = localStorage.getItem('netVAT');
+      if (storedNetVAT) setAmount(storedNetVAT);
+      // Or fetch from API if needed
     }
+  }, [taxType]);
 
-  },[])
+  const handlePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    setIsProcessing(true);
 
- const handlePayment = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const token = localStorage.getItem('token');
-  setIsProcessing(true);
+    const payload = {
+      amount,
+      email,
+      firstName,
+      lastName,
+      phone,
+      taxType, // send tax type to backend if needed
+    };
 
-  const payload = {
-    amount,
-    email,
-    firstName,
-    lastName,
-    phone,
+    try {
+      const res = await fetch('http://localhost:7000/api/payments', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok && data.paymentUrl) {
+        setRedirectUrl(data.paymentUrl);
+        setTimeout(() => {
+          window.location.href = data.paymentUrl;
+        }, 1500);
+      } else {
+        toast.error(data.message || 'Payment initialization failed');
+      }
+    } catch (err) {
+      toast.error('Payment initialization failed');
+    }
+    setIsProcessing(false);
   };
 
-  console.log('Sending payment data:', payload); // <-- Log the data being sent
-
-  try {
-    const res = await fetch('http://localhost:7000/api/payments', {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    console.log(data)
-    if (res.ok && data.paymentUrl) {
-      setRedirectUrl(data.paymentUrl);
-      console.log(data);
-      setTimeout(() => {
-        window.location.href = data.paymentUrl;
-      }, 1500);
-    } else {
-      toast.error(data.message || 'Payment initialization failed');
-    }
-  } catch (err) {
-    toast.error('Payment initialization failed');
-  }
-  setIsProcessing(false);
-};
   return (
     <div className="max-w-xl mx-auto mt-10 bg-white shadow rounded-lg p-8">
       <h2 className="text-2xl font-bold mb-6">Pay Your Tax with Chapa</h2>
@@ -78,6 +78,18 @@ export default function PaymentInterface() {
         </div>
       ) : (
         <form onSubmit={handlePayment} className="space-y-4">
+          <div>
+            <label className="block font-medium mb-1">Tax Type</label>
+            <select
+              className="border rounded px-3 py-2 w-full"
+              value={taxType}
+              onChange={e => setTaxType(e.target.value)}
+            >
+              <option value="profit">Profit Tax</option>
+              <option value="vat">Net VAT</option>
+            </select>
+          </div>
+          {/* ...rest of your form fields... */}
           <div>
             <label className="block font-medium mb-1">First Name</label>
             <input
@@ -117,7 +129,7 @@ export default function PaymentInterface() {
           </div>
           {amount && (
             <div className="bg-blue-50 p-4 rounded-lg mt-2">
-              <div className="text-sm font-medium text-blue-900">Calculated Tax</div>
+              <div className="text-sm font-medium text-blue-900">Amount to Pay</div>
               <div className="text-2xl font-bold text-blue-900">ETB {amount}</div>
             </div>
           )}
