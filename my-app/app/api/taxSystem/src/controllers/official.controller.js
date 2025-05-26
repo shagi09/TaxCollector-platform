@@ -83,7 +83,6 @@ exports.updateAuditor = async (req, res) => {
   }
 };
 
-
 exports.deleteAuditor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -99,8 +98,6 @@ exports.deleteAuditor = async (req, res) => {
     res.status(500).json({ error: 'Server error while deleting auditor' });
   }
 };
-
-
 
 exports.loginOfficial = async (req, res) => {
   try {
