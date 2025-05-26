@@ -19,12 +19,13 @@ app.use(cors({
 app.use('/api/incomes', require('./routes/income.routes'));
 app.use('/api/expenses', require('./routes/expense.routes'));
 app.use('/api/payroll', require('./routes/payroll.routes'));
-app.use('/api/auth', require('./routes/auth.routes'))
+app.use('/api/taxPayer', require('./routes/taxPayer.routes'))
 app.use('/api/auditor', require('./routes/auditor.routes'))
 app.use('/api/official', require('./routes/official.routes'))
 app.use('/api/profitTax', require('./routes/profitTax.routes'))
 app.use('/api/receipt', require('./routes/reciept.routes'))
 app.use('/api/payments', require('./routes/payment.routes'))
+
 
 // Root test
 app.get('/', (req, res) => {

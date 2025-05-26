@@ -6,9 +6,13 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+   tls: {
+    // 👇 Accept self-signed certificates
+    rejectUnauthorized: false
+  }
 });
 
-const sendMail = async (to, subject, text) => {
+exports.sendMail = async (to, subject, text) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to,
@@ -19,4 +23,3 @@ const sendMail = async (to, subject, text) => {
   await transporter.sendMail(mailOptions);
 };
 
-module.exports = sendMail;
