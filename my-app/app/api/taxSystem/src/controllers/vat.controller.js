@@ -3,7 +3,7 @@ const Expense = require('../models/expense.model');
 
 exports.getVATSummaryByYear = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const year = parseInt(req.params.year);
 
     if (!year || isNaN(year)) {
