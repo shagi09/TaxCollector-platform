@@ -22,36 +22,46 @@ export default function PaymentInterface() {
 
   },[])
 
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-    try {
-      const res = await fetch('http://localhost:7000/api/payments/chapa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          email,
-          firstName,
-          lastName,
-          phone,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.paymentUrl) {
-        setRedirectUrl(data.paymentUrl);
-        setTimeout(() => {
-          window.location.href = data.paymentUrl;
-        }, 1500);
-      } else {
-        toast.error(data.message || 'Payment initialization failed');
-      }
-    } catch (err) {
-      toast.error('Payment initialization failed');
-    }
-    setIsProcessing(false);
+ const handlePayment = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const token = localStorage.getItem('token');
+  setIsProcessing(true);
+
+  const payload = {
+    amount,
+    email,
+    firstName,
+    lastName,
+    phone,
   };
 
+  console.log('Sending payment data:', payload); // <-- Log the data being sent
+
+  try {
+    const res = await fetch('http://localhost:7000/api/payments', {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    console.log(data)
+    if (res.ok && data.paymentUrl) {
+      setRedirectUrl(data.paymentUrl);
+      console.log(data);
+      setTimeout(() => {
+        window.location.href = data.paymentUrl;
+      }, 1500);
+    } else {
+      toast.error(data.message || 'Payment initialization failed');
+    }
+  } catch (err) {
+    toast.error('Payment initialization failed');
+  }
+  setIsProcessing(false);
+};
   return (
     <div className="max-w-xl mx-auto mt-10 bg-white shadow rounded-lg p-8">
       <h2 className="text-2xl font-bold mb-6">Pay Your Tax with Chapa</h2>

@@ -34,7 +34,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex gap-4 items-center justify-center min-h-screen bg-gray-400">
+    <div className="flex gap-4 items-center justify-center min-h-screen bg-blue-50">
       <div className="hidden md:block">
         {/* Add your illustration here */}
         <img src="/illustration.png" alt="Illustration" className="w-full max-w-md" />

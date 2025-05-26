@@ -17,7 +17,7 @@ exports.payment = async (req, res) => {
         phone_number: phone,
         tx_ref,
         callback_url: "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-        return_url: "http://localhost:3000",
+        return_url: `http://localhost:3000`,
         customization: {
           title: "Payment for ",
           description: "I love online payments",
@@ -44,8 +44,7 @@ exports.payment = async (req, res) => {
  
     res.status(201).json({
       message: "Booking created successfully, redirect to payment",
-      paymentUrl: chapaResponse.data.checkout_url,
-      booking: savedBooking,
+      paymentUrl: chapaResponse.data.checkout_url
     });
   } catch (error) {
     console.error('Error handling Chapa payment:', error);
