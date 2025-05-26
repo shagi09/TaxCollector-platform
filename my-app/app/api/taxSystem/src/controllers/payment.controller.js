@@ -233,7 +233,7 @@ exports.getVatReceipt = async (req, res) => {
       tx_ref,
       date: Date.now(),
       year,
-      profitTaxId
+      profitTaxId 
     });
 
     const chapaBody = {
