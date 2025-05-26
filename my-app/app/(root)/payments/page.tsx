@@ -9,6 +9,8 @@ export default function PaymentInterface() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+    const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('');
 
@@ -20,47 +22,57 @@ export default function PaymentInterface() {
     } else if (taxType === 'vat') {
       const storedNetVAT = localStorage.getItem('netVAT');
       if (storedNetVAT) setAmount(storedNetVAT);
-      // Or fetch from API if needed
+          setMonth(localStorage.getItem('vatMonth') || '');
+    setYear(localStorage.getItem('vatYear') || '');
     }
   }, [taxType]);
 
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    setIsProcessing(true);
+const handlePayment = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const token = localStorage.getItem('token');
+  setIsProcessing(true);
 
-    const payload = {
-      amount,
-      email,
-      firstName,
-      lastName,
-      phone,
-      taxType, // send tax type to backend if needed
-    };
-
-    try {
-      const res = await fetch('http://localhost:7000/api/payments', {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (res.ok && data.paymentUrl) {
-        setRedirectUrl(data.paymentUrl);
-        setTimeout(() => {
-          window.location.href = data.paymentUrl;
-        }, 1500);
-      } else {
-        toast.error(data.message || 'Payment initialization failed');
-      }
-    } catch (err) {
-      toast.error('Payment initialization failed');
-    }
-    setIsProcessing(false);
+  const payload = {
+    amount,
+    email,
+    firstName,
+    lastName,
+    phone,
+    month,
+    year,
   };
+
+console.log(payload)
+
+  // Choose endpoint based on tax type
+  const endpoint =
+    taxType === 'profit'
+      ? 'http://localhost:7000/api/payments/profit-tax'
+      : 'http://localhost:7000/api/payments/vat';
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (res.ok && data.paymentUrl) {
+      setRedirectUrl(data.paymentUrl);
+      setTimeout(() => {
+        window.location.href = data.paymentUrl;
+      }, 1500);
+    } else {
+      toast.error(data.message || 'Payment initialization failed');
+    }
+  } catch (err) {
+    toast.error('Payment initialization failed');
+  }
+  setIsProcessing(false);
+};
 
   return (
     <div className="max-w-xl mx-auto mt-10 bg-white shadow rounded-lg p-8">
@@ -127,6 +139,8 @@ export default function PaymentInterface() {
               required
             />
           </div>
+                    <input type="hidden" value={month} name="month" />
+          <input type="hidden" value={year} name="year" />
           {amount && (
             <div className="bg-blue-50 p-4 rounded-lg mt-2">
               <div className="text-sm font-medium text-blue-900">Amount to Pay</div>
