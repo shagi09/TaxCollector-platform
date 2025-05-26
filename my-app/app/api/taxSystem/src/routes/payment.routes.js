@@ -7,7 +7,7 @@ router.post('/payroll/:payrollMonthId', paymentController.payrollPayment);
 router.get('/transactions/:id', paymentController.getPayrollReceipt);
 
 // VAT
-router.post('/vat/:id', paymentController.vatPayment);
+router.post('/vat/:vatId', paymentController.vatPayment);
 router.get('/transactions/vat/:id', paymentController.getVatReceipt);
 
 // Profit Tax
