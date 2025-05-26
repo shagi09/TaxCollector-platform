@@ -38,8 +38,7 @@ const handlePayment = async (e: React.FormEvent) => {
     firstName,
     lastName,
     phone,
-    month,
-    year,
+
   };
 
 console.log(payload)
