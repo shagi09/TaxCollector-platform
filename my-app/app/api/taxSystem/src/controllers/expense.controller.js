@@ -11,6 +11,8 @@ exports.createExpense = async (req, res) => {
 
     const date = paidDate ? new Date(paidDate) : new Date();
     const year = date.getFullYear()
+    const month = date.getMonth()
+    const vat = amount * 0.15
     const taxPeriodId = await getOrCreateTaxPeriodId(date);
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
@@ -24,6 +26,8 @@ exports.createExpense = async (req, res) => {
       paidDate: date,
       notes,
       taxPeriodId,
+      month,
+      vat,
       year
     });
 
@@ -41,14 +45,35 @@ exports.createExpense = async (req, res) => {
    try {
      const userId = req.user._id;
      const year = parseInt(req.params.year); // e.g. /api/incomes/2024
+
+     const expenses = await Expense.find({
+       userId,
+       year, // match directly with the stored year
+     }).sort({ date: -1 });
  
-     if (!year || isNaN(year)) {
-       return res.status(400).json({ error: 'Valid year is required as a route parameter' });
-     }
+     res.status(200).json({ expenses });
+   } catch (error) {
+     console.error('Get Expenses Error:', error);
+     res.status(500).json({ error: 'Failed to fetch Expense records' });
+   }
+ };
+
+// get expenses by month
+   exports.getExpensesByMonth = async (req, res) => {
+   try {
+     const userId = req.user._id;
+     const year = parseInt(req.params.year); // e.g. /api/incomes/2024
+     const month = parseInt(req.params.month); // e.g. /api/incomes/2024
+
+ 
+     if (!year || isNaN(year) || !month || isNaN(month) || month < 1 || month > 12) {
+      return res.status(400).json({ error: 'Valid year and month are required as route parameters' });
+    }
  
      const expenses = await Expense.find({
        userId,
        year, // match directly with the stored year
+       month
      }).sort({ date: -1 });
  
      res.status(200).json({ expenses });

@@ -10,7 +10,9 @@ exports.addIncome = async (req, res) => {
 
     const date = recievedDate ? new Date(recievedDate) : new Date();
      const year = date.getFullYear(); // Extract the year
+     const month = date.getMonth() + 1
      const taxPeriodId = await getOrCreateTaxPeriodId(date);
+     const vat = amount * 0.15
 
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
@@ -22,10 +24,13 @@ exports.addIncome = async (req, res) => {
       year,
       receiptUrl,
       taxPeriodId,
+      month,
+      vat, 
       userId: req.user._id //"4a832c84c0ada085284abf30"// Assuming authentication middleware sets this
     });
 
     res.status(201).json({ message: 'Income recorded successfully', income });
+    console.log(month)
   } catch (error) {
     console.error('Add Income Error:', error);
     res.status(500).json({ error: 'Failed to record income' });
@@ -35,15 +40,16 @@ exports.addIncome = async (req, res) => {
 // Get all income records for logged-in user
  exports.getIncomes = async (req, res) => {
   try {
-    const userId = req.user._id;
+   const userId = req.user._id;
    const year = parseInt(req.params.year); // e.g. /api/incomes/2024
+  
 
      if (!year || isNaN(year)) {
       return res.status(400).json({ error: 'Valid year is required as a route parameter' });
     }
 
     const incomes = await Income.find({
-      userId,
+     userId,
      year, // match directly with the stored year
     }).sort({ date: -1 });
 
@@ -57,9 +63,33 @@ exports.addIncome = async (req, res) => {
   }
 };
 
+// Get monthly incomes records for logged-in user
+ exports.getMonthlyIncomes = async (req, res) => {
+  try {
+   const userId = req.user._id;
+   const year = parseInt(req.params.year); // e.g. /api/incomes/2024
+   const month  = parseInt(req.params.month)
+
+    if (!year || isNaN(year) || !month || isNaN(month) || month < 1 || month > 12) {
+    return res.status(400).json({ error: 'Valid year and month are required as route parameters' });
+    }
 
 
+    const incomes = await Income.find({
+     userId,
+     year,
+     month // match directly with the stored year
+    }).sort({ date: -1 });
 
+    incomes.forEach(income => {
+      console.log("year at last" + income.month);
+    });
+    res.status(200).json({ incomes });
+  } catch (error) {
+    console.error('Get Incomes Error:', error);
+    res.status(500).json({ error: 'Failed to fetch income records' });
+  }
+};
 
 // Update an expense
 exports.updateIncome = async (req, res) => {
@@ -87,7 +117,6 @@ exports.updateIncome = async (req, res) => {
     res.status(500).json({ error: 'Failed to update Income' });
   }
 };
-
 
 // Delete an expense
 exports.deleteIncome = async (req, res) => {
