@@ -1,5 +1,5 @@
 const axios = require('axios');
-const AuditRecords = require('../models/auditRecords.model'); 
+const AuditRecords = require('../models/payrollAuditRecord.model'); 
 const PayrollRecord = require('../models/payrollRecord')
 
 exports.payment = async (req, res) => {
@@ -124,3 +124,4 @@ try {
     res.status(500).json({ message: "Failed to update payroll month status" });
   }
 };
+
