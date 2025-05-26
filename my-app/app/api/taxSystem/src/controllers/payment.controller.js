@@ -26,7 +26,7 @@ exports.payrollPayment = async (req, res) => {
     const { amount, email, firstName, lastName, phone } = req.body;
     const { payrollMonthId } = req.params;
 
-    const tx_ref = 'payroll-' + Date.now();
+    const tx_ref = "chewatatest-" + Date.now();
 
     const payroll = await PayrollRecord.findOne({ 'months._id': payrollMonthId });
     if (!payroll) return res.status(404).json({ error: 'Payroll month not found' });
@@ -111,11 +111,25 @@ exports.getPayrollReceipt = async (req, res) => {
 // === VAT PAYMENT CONTROLLER ===
 exports.vatPayment = async (req, res) => {
   try {
-    const { amount, email, firstName, lastName, phone, month, year } = req.body;
+    const { email, firstName, lastName, phone } = req.body;
+
+    const { vatId } = req.params.id
+    // 1. Ensure vatId is provided
+    if (!vatId) {
+      return res.status(400).json({ message: 'VAT ID is required' });
+    }
+
+    // 2. Find the VAT entry
+    const vat = await Vat.findById(vatId);
+    if (!vat) {
+      return res.status(404).json({ message: 'VAT record not found' });
+    }
+
     const tx_ref = 'vat-' + Date.now();
 
+    // 3. Create the VAT audit record
     const audit = await VatAuditRecords.create({
-      amount,
+      amount: vat.amount,
       currency: 'ETB',
       email,
       firstName,
@@ -123,12 +137,14 @@ exports.vatPayment = async (req, res) => {
       phone,
       tx_ref,
       date: Date.now(),
-      month,
-      year,
+      month: vat.month,
+      year: vat.year,
+      vatId: vat._id, // reference to VAT record
     });
 
+    // 4. Prepare Chapa payment body
     const chapaBody = {
-      amount,
+      amount: vat.amount,
       currency: 'ETB',
       email,
       first_name: firstName,
@@ -139,13 +155,14 @@ exports.vatPayment = async (req, res) => {
       return_url: `http://localhost:3000/transactions/vat/${audit._id}`,
       customization: {
         title: 'VAT Payment',
-        description: 'Paying VAT online',
+        description: `Paying VAT for month ${vat.month}, ${vat.year}`,
       },
       meta: {
         hide_receipt: 'true',
       },
     };
 
+    // 5. Initiate Chapa payment
     const response = await initiateChapaPayment(chapaBody);
     audit.checkout_url = response.data.data.checkout_url;
     await audit.save();
@@ -163,18 +180,29 @@ exports.vatPayment = async (req, res) => {
 // === VAT TRANSACTION RECEIPT ===
 exports.getVatReceipt = async (req, res) => {
   try {
-    const audit = await VatAuditRecords.findById(req.params.id);
-    if (!audit) return res.status(404).json({ message: 'VAT Transaction not found' });
+    const { id } = req.params.id;
 
-    // (Optional logic for status update if needed)
+    const receipt = await VatAuditRecords.findById(id);
+    if (!receipt) {
+      return res.status(404).json({ message: 'VAT receipt not found' });
+    }
+
+    // If receipt exists and vatId is available
+    if (receipt.vatId) {
+      const vat = await Vat.findById(receipt.vatId);
+      if (vat && vat.status !== 'Paid') {
+        vat.status = 'Paid';
+        await vat.save();
+      }
+    }
 
     res.status(200).json({
       message: 'VAT payment successful',
-      audit,
+      receipt,
     });
   } catch (error) {
     console.error('VAT receipt error:', error);
-    res.status(500).json({ message: 'Failed to fetch VAT receipt' });
+    res.status(500).json({ message: 'Failed to retrieve VAT receipt' });
   }
 };
 
