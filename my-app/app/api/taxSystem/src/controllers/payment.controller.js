@@ -3,6 +3,8 @@ const AuditRecords = require('../models/payrollAuditRecord.model');
 const VatAuditRecords = require('../models/vatAuditRecord.model'); 
 const ProfitTaxAuditRecords = require('../models/profitTaxAuditRecord.model'); 
 const PayrollRecord = require('../models/payrollRecord');
+const Vat = require('../models/vat.model')
+const ProfitTax = require('../models/profitTax.model')
 
 const CHAPA_SECRET_KEY = 'Bearer CHASECK_TEST-E2XnZBkD5AqYSXud9MWRnqHtRqgqZYPm';
 
@@ -111,7 +113,7 @@ exports.getPayrollReceipt = async (req, res) => {
 // === VAT PAYMENT CONTROLLER ===
 exports.vatPayment = async (req, res) => {
   try {
-    const { email, firstName, lastName, phone } = req.body;
+    const {  amount, email, firstName, lastName, phone } = req.body;
 
     const { vatId } = req.params.id
     // 1. Ensure vatId is provided
@@ -129,7 +131,7 @@ exports.vatPayment = async (req, res) => {
 
     // 3. Create the VAT audit record
     const audit = await VatAuditRecords.create({
-      amount: vat.amount,
+      amount: amount,
       currency: 'ETB',
       email,
       firstName,
@@ -207,11 +209,20 @@ exports.getVatReceipt = async (req, res) => {
 };
 
 // === PROFIT TAX PAYMENT CONTROLLER ===
-exports.profitTaxPayment = async (req, res) => {
+ exports.profitTaxPayment = async (req, res) => {
   try {
-    const { amount, email, firstName, lastName, phone, month, year } = req.body;
+    const { id: profitTaxId } = req.params;
+    const { amount, email, firstName, lastName, phone } = req.body;
+
+    const profitTaxRecord = await ProfitTax.findById(profitTaxId);
+    if (!profitTaxRecord) {
+      return res.status(404).json({ message: 'Profit Tax record not found' });
+    }
+
+    const year = profitTaxRecord.year; // Fetch year from the record
     const tx_ref = 'profit-' + Date.now();
 
+    // Create audit record
     const audit = await ProfitTaxAuditRecords.create({
       amount,
       currency: 'ETB',
@@ -221,8 +232,8 @@ exports.profitTaxPayment = async (req, res) => {
       phone,
       tx_ref,
       date: Date.now(),
-      month,
       year,
+      profitTaxId
     });
 
     const chapaBody = {
@@ -252,19 +263,28 @@ exports.profitTaxPayment = async (req, res) => {
       message: 'Profit tax payment initiated',
       paymentUrl: audit.checkout_url,
     });
+
   } catch (error) {
     console.error('Profit tax payment error:', error);
     res.status(500).json({ message: 'Failed to initialize profit tax payment' });
   }
 };
-
 // === PROFIT TAX TRANSACTION RECEIPT ===
 exports.getProfitReceipt = async (req, res) => {
   try {
     const audit = await ProfitTaxAuditRecords.findById(req.params.id);
-    if (!audit) return res.status(404).json({ message: 'Profit Tax Transaction not found' });
+    if (!audit) {
+      return res.status(404).json({ message: 'Profit Tax Transaction not found' });
+    }
 
-    // (Optional logic for status update if needed)
+    // Update status of corresponding ProfitTax record
+    if (audit.profitTaxId) {
+      const profitTax = await ProfitTax.findById(audit.profitTaxId);
+      if (profitTax && profitTax.status !== 'paid') {
+        profitTax.status = 'paid';
+        await profitTax.save();
+      }
+    }
 
     res.status(200).json({
       message: 'Profit tax payment successful',
@@ -275,3 +295,4 @@ exports.getProfitReceipt = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch profit tax receipt' });
   }
 };
+
