@@ -215,7 +215,7 @@ exports.getVatReceipt = async (req, res) => {
 // === PROFIT TAX PAYMENT CONTROLLER ===
  exports.profitTaxPayment = async (req, res) => {
   try {
-    const { id: profitTaxId } = req.params;
+    const { profitTaxId } = req.params;
     const { amount, email, firstName, lastName, phone } = req.body;
     const userId = req.user.id; 
 
