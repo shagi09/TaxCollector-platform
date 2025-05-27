@@ -40,6 +40,7 @@ exports.verifyAuditor = (req, res, next) => {
       return res.status(403).json({ message: 'Forbidden. Only auditors are allowed.' });
     }
 
+    
     next();
   } catch (error) {
     console.error('Auditor verification error:', error);

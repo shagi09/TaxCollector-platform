@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { loginAuditor, listTaxPayers, getTaxpayerById, getIncomesByYear, getIncomesByYearAndMonth, getExpensesByYear, getExpensesByYearAndMonth, getPayrollAuditByTaxpayer, getVatAuditByTaxpayer, getProfitTaxAuditByTaxpayer  } = require('../controllers/auditor.controller');
+const { loginAuditor, listTaxPayers, getTaxpayerById, getIncomesByYear, getIncomesByYearAndMonth, getExpensesByYear, getExpensesByYearAndMonth, getPayrollAuditByTaxpayer, getVatAuditByTaxpayer  } = require('../controllers/auditor.controller');
 const { isLogin, verifyAuditor } = require('../middlewares/authMiddleware')
 
 
@@ -15,6 +15,6 @@ router.get('/expense/:id/:year/:month', isLogin, verifyAuditor, getExpensesByYea
 router.get('/audit/payroll/:taxpayerId/:year/:month', isLogin, verifyAuditor, getPayrollAuditByTaxpayer);
 router.get('/audit/vat/:taxpayerId/:year/:month', isLogin, verifyAuditor, getVatAuditByTaxpayer);
 router.get('/audit/profit/:taxpayerId/:year', isLogin, verifyAuditor, getProfitTaxAuditByTaxpayer);
-
+router.post('/blacklist/:userId/:auditRecordId' , isLogin, verifyAuditor, addUserToBlacklist)
 
 module.exports = router;

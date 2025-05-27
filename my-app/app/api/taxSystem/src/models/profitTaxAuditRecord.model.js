@@ -20,7 +20,10 @@ const profitTaxAuditRecordSchema = new mongoose.Schema({
     ref: 'ProfitTaxPeriod', // Define this model for organizing annual profit tax entries
     required: true,
   },
-
+  type: {
+    type: String,
+    default: 'PROFIT',
+  },
   year: { type: Number },
 }, { timestamps: true });
 
