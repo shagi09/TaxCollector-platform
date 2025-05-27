@@ -20,7 +20,10 @@ const vatAuditRecordSchema = new mongoose.Schema({
     ref: 'VatPeriod', // You can define this model as a period container for VAT
     required: true,
   },
-
+  type: {
+    type: String,
+    default: 'VAT',
+  },
   month: { type: Number },
   year: { type: Number },
 }, { timestamps: true });

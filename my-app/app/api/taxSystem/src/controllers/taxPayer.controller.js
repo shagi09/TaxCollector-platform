@@ -2,6 +2,7 @@
 const TaxPayer = require('../models/taxPayer.model');
 const bcrypt = require('bcryptjs');
 const { signToken } = require('../utils/jwt');
+const Notification = require('../models/notification.model')
 
 exports.loginTaxPayer = async (req, res) => {
   try {
@@ -151,5 +152,18 @@ exports.getTaxPayerProfile = async (req, res) => {
   } catch (error) {
     console.error('Get Taxpayer Profile Error:', error);
     res.status(500).json({ error: 'Server error fetching profile' });
+  }
+};
+
+exports.getUserNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({ notifications });
+  } catch (error) {
+    console.error('Fetch notifications error:', error);
+    res.status(500).json({ message: 'Failed to fetch notifications' });
   }
 };
