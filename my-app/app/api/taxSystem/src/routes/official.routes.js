@@ -7,10 +7,10 @@ const { isLogin, verifyCityOfficial } = require('../middlewares/authMiddleware')
 router.post('/register-auditor', isLogin, verifyCityOfficial, registerAuditor);
 router.post('/login', loginOfficial);
 router.post('/register', registerOfficial);
-router.get('/auditors', verifyCityOfficial, getAllAuditors);
-router.get('/auditors/:id', verifyCityOfficial, getAuditorById);
-router.put('/auditors/:id', verifyCityOfficial, updateAuditor);
-router.delete('/auditors/:id', verifyCityOfficial, deleteAuditor);
+router.get('/auditors',  isLogin, verifyCityOfficial, getAllAuditors);
+router.get('/auditors/:id',  isLogin, verifyCityOfficial, getAuditorById);
+router.put('/auditors/:id',  isLogin, verifyCityOfficial, updateAuditor);
+router.delete('/auditors/:id',  isLogin, verifyCityOfficial, deleteAuditor);
 
 
 module.exports = router

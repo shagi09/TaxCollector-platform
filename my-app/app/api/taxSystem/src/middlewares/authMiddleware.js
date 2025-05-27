@@ -28,4 +28,25 @@ exports.verifyCityOfficial = (req, res, next) => {
   return res.status(403).json({ error: 'Access denied. Officials only.' });
 };
 
+exports.verifyAuditor = (req, res, next) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized. User not found.' });
+    }
+
+    if (user.role !== 'auditor') {
+      return res.status(403).json({ message: 'Forbidden. Only auditors are allowed.' });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Auditor verification error:', error);
+    return res.status(500).json({ message: 'Server error during auditor verification' });
+  }
+};
+
+
+
 

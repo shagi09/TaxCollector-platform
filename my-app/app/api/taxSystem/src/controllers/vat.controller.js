@@ -1,23 +1,20 @@
- const Income = require('../models/income.model');
+const Income = require('../models/income.model');
 const Expense = require('../models/expense.model');
-const Vat = require('../models/vat.model'); // Import VAT model
+const Vat = require('../models/vat.model'); // VAT model
 
 exports.getVATSummaryByYear = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // Authenticated taxpayer's ID
     const year = parseInt(req.params.year);
 
     if (!year || isNaN(year)) {
       return res.status(400).json({ error: 'Valid year is required as a route parameter' });
     }
 
-    // Initialize VAT arrays for each month (0-indexed)
     const incomeVATByMonth = Array(12).fill(0);
     const expenseVATByMonth = Array(12).fill(0);
 
-    // Fetch all income records for the given user and year
     const incomes = await Income.find({ userId, year });
-
     incomes.forEach(income => {
       const monthIndex = income.month - 1;
       if (monthIndex >= 0 && monthIndex < 12) {
@@ -25,9 +22,7 @@ exports.getVATSummaryByYear = async (req, res) => {
       }
     });
 
-    // Fetch all expense records for the given user and year
     const expenses = await Expense.find({ userId, year });
-
     expenses.forEach(expense => {
       const monthIndex = expense.month - 1;
       if (monthIndex >= 0 && monthIndex < 12) {
@@ -42,8 +37,7 @@ exports.getVATSummaryByYear = async (req, res) => {
       const expenseVAT = parseFloat(expenseVATByMonth[i].toFixed(2));
       const netVAT = parseFloat((incomeVAT - expenseVAT).toFixed(2));
 
-      // Optional: Save/update to VAT collection for persistence
-      const existingRecord = await Vat.findOne({ year, month: i + 1 });
+      const existingRecord = await Vat.findOne({ userId, year, month: i + 1 });
 
       if (existingRecord) {
         existingRecord.incomeVat = incomeVAT;
@@ -52,6 +46,7 @@ exports.getVATSummaryByYear = async (req, res) => {
         await existingRecord.save();
       } else {
         await Vat.create({
+          userId,
           year,
           month: i + 1,
           incomeVat: incomeVAT,
