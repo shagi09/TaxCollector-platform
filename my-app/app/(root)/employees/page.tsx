@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PlusIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const AVAILABLE_YEARS = [2021, 2022, 2023, 2024, 2025];
 const MONTHS = [
@@ -16,7 +17,10 @@ const PayrollPage = () => {
   const [totalSalary, setTotalSalary] = useState(0);
   const [totalTax, setTotalTax] = useState(0);
   const [dueDate, setDueDate] = useState('');
+  const [taxStatus, setTaxStatus] = useState('');
+  const [penalty, setPenalty] = useState(0);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   // Add Employee Form State
   const [showAddForm, setShowAddForm] = useState(false);
@@ -27,42 +31,50 @@ const PayrollPage = () => {
   });
 
   // Fetch payroll summary for selected year and month
-  useEffect(() => {
-    const fetchPayroll = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(
-          `http://localhost:7000/api/payroll/${year}/${month}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setRecords(data.records || []);
-          setTotalSalary(data.totalSalary || 0);
-          setTotalTax(data.totalTax || 0);
-          setDueDate(data.dueDate || '');
-        } else {
-          setRecords([]);
-          setTotalSalary(0);
-          setTotalTax(0);
-          setDueDate('');
-          toast.error('No payroll data found for this period.');
+  const fetchPayroll = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:7000/api/payroll/${year}/${month}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         }
-      } catch (error) {
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        setRecords(data.records || []);
+        setTotalSalary(data.totalSalary || 0);
+        setTotalTax(data.totalTax || 0);
+        setDueDate(data.dueDate || '');
+        setTaxStatus(data.taxStatus || '');
+        setPenalty(data.penalty || 0);
+      } else {
         setRecords([]);
         setTotalSalary(0);
         setTotalTax(0);
         setDueDate('');
-        toast.error('Failed to fetch payroll summary.');
-      } finally {
-        setLoading(false);
+        setTaxStatus('');
+        setPenalty(0);
+        toast.error('No payroll data found for this period.');
       }
-    };
+    } catch (error) {
+      setRecords([]);
+      setTotalSalary(0);
+      setTotalTax(0);
+      setDueDate('');
+      setTaxStatus('');
+      setPenalty(0);
+      toast.error('Failed to fetch payroll summary.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPayroll();
   }, [year, month]);
 
@@ -84,24 +96,6 @@ const PayrollPage = () => {
         toast.success('Payroll record added!');
         setShowAddForm(false);
         setNewEmployee({ employeeName: '', description: '', salary: '' });
-        // Refresh payroll summary
-        const fetchPayroll = async () => {
-          const response = await fetch(
-            `http://localhost:7000/api/payroll/${year}/${month}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setRecords(data.records || []);
-            setTotalSalary(data.totalSalary || 0);
-            setTotalTax(data.totalTax || 0);
-            setDueDate(data.dueDate || '');
-          }
-        };
         fetchPayroll();
       } else {
         toast.error('Failed to add payroll record.');
@@ -144,24 +138,6 @@ const PayrollPage = () => {
       });
       if (response.ok) {
         toast.success('Previous month records loaded!');
-        // Refresh payroll summary
-        const fetchPayroll = async () => {
-          const response = await fetch(
-            `http://localhost:7000/api/payroll/${year}/${month}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setRecords(data.records || []);
-            setTotalSalary(data.totalSalary || 0);
-            setTotalTax(data.totalTax || 0);
-            setDueDate(data.dueDate || '');
-          }
-        };
         fetchPayroll();
       } else {
         toast.error('Failed to load previous month records.');
@@ -191,7 +167,10 @@ const PayrollPage = () => {
           <label className="font-semibold mr-2">Month:</label>
           <select
             value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
+            onChange={(e) => {
+              setMonth(Number(e.target.value));
+              localStorage.setItem('payrollMonth', e.target.value);
+            }}
             className="border rounded-lg p-2"
           >
             {MONTHS.map((m, idx) => (
@@ -200,11 +179,11 @@ const PayrollPage = () => {
           </select>
         </div>
         <button
-          onClick={()=>setShowAddForm(true)}
+          onClick={() => setShowAddForm(true)}
           className="bg-black flex items-center justify-center gap-2 hover:bg-gray-800 text-white rounded-lg px-4 py-2 "
         >
-          <PlusIcon className='w-4 h-4 mr-2'/>
-          Add Employeee Payroll
+          <PlusIcon className='w-4 h-4 mr-2' />
+          Add Employee Payroll
         </button>
         <button
           onClick={handleLoadPreviousMonth}
@@ -228,6 +207,12 @@ const PayrollPage = () => {
           <div className="text-2xl font-bold text-green-700">{dueDate}</div>
         </div>
       </div>
+      <div className="mb-4">
+        <span className="font-semibold">Tax Status:</span> {taxStatus}
+        {penalty > 0 && (
+          <span className="ml-4 text-red-600 font-semibold">Penalty: ${penalty.toLocaleString()}</span>
+        )}
+      </div>
 
       {loading ? (
         <div className="text-center py-10">Loading payroll records...</div>
@@ -241,12 +226,13 @@ const PayrollPage = () => {
               <th className="py-2">Description</th>
               <th className="py-2">Created At</th>
               <th className="py-2">Actions</th>
+              <th className="py-2">Payment</th>
             </tr>
           </thead>
           <tbody>
             {records.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-500">
+                <td colSpan={7} className="text-center py-4 text-gray-500">
                   No payroll records for this period.
                 </td>
               </tr>
@@ -254,21 +240,34 @@ const PayrollPage = () => {
               records.map((emp) => (
                 <tr key={emp._id} className="border-b">
                   <td className="py-2">{emp.employeeName}</td>
-<td className="py-2">
-  ${emp.salary?.$numberDecimal ? Number(emp.salary.$numberDecimal).toLocaleString() : emp.salary}
-</td>
-<td className="py-2">
-  ${emp.tax?.$numberDecimal ? Number(emp.tax.$numberDecimal).toLocaleString() : emp.tax}
-</td>
+                  <td className="py-2">
+                    ${emp.salary?.$numberDecimal ? Number(emp.salary.$numberDecimal).toLocaleString() : emp.salary}
+                  </td>
+                  <td className="py-2">
+                    ${emp.tax?.$numberDecimal ? Number(emp.tax.$numberDecimal).toLocaleString() : emp.tax}
+                  </td>
                   <td className="py-2">{emp.description}</td>
                   <td className="py-2">{emp.createdAt ? new Date(emp.createdAt).toLocaleDateString() : ''}</td>
                   <td className="py-2">
-                    {/* You can add edit functionality here */}
                     <button
                       onClick={() => handleDelete(emp._id)}
                       className="text-red-500 ml-2"
                     >
                       Delete
+                    </button>
+                  </td>
+                  <td className="py-2">
+                    <button
+                      onClick={() => {
+                        localStorage.setItem('payrollTax', emp.tax?.$numberDecimal ? emp.tax.$numberDecimal : emp.tax);
+                        localStorage.setItem('payrollMonth', month.toString());
+                        localStorage.setItem('payrollYear', year.toString());
+                        localStorage.setItem('payrollMonthId', emp._id); // Save payroll record's _id for payment
+                        router.push('/payments');
+                      }}
+                      className="bg-black flex items-center justify-center hover:bg-gray-800 text-white rounded-lg px-4"
+                    >
+                      Proceed to Payment
                     </button>
                   </td>
                 </tr>
@@ -339,15 +338,7 @@ const PayrollPage = () => {
           </div>
         </div>
       )}
-    <div className='flex justify-end'>
-                      <button
-                className="bg-black flex items-center justify-center gap-2 hover:bg-gray-800 text-white rounded-lg px-4 py-2 mt-4"
-              >
-                Proceed to Payment
-              </button>
     </div>
-    </div>
-    
   );
 };
 

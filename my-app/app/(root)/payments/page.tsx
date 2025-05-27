@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 export default function PaymentInterface() {
-  const [taxType, setTaxType] = useState('profit'); // 'profit' or 'vat'
+  const [taxType, setTaxType] = useState('profit'); // 'profit', 'vat', or 'payroll'
   const [amount, setAmount] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-    const [month, setMonth] = useState('');
+  const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('');
@@ -22,14 +22,25 @@ export default function PaymentInterface() {
     } else if (taxType === 'vat') {
       const storedNetVAT = localStorage.getItem('netVAT');
       if (storedNetVAT) setAmount(storedNetVAT);
-          setMonth(localStorage.getItem('vatMonth') || '');
-    setYear(localStorage.getItem('vatYear') || '');
+      setMonth(localStorage.getItem('vatMonth') || '');
+      setYear(localStorage.getItem('vatYear') || '');
+    } else if (taxType === 'payroll') {
+      const storedPayrollAmount=localStorage.getItem('payrollTax')
+      // You may want to fetch payroll months and amounts here
+      setAmount(storedPayrollAmount)
     }
   }, [taxType]);
 
 const handlePayment = async (e: React.FormEvent) => {
   e.preventDefault();
   const token = localStorage.getItem('token');
+  const payrollMonthId = localStorage.getItem('payrollMonthId'); // <-- get from localStorage
+
+  if (!payrollMonthId) {
+    toast.error('Payroll Month ID is missing.');
+    return;
+  }
+
   setIsProcessing(true);
 
   const payload = {
@@ -38,16 +49,9 @@ const handlePayment = async (e: React.FormEvent) => {
     firstName,
     lastName,
     phone,
-
   };
 
-console.log(payload)
-
-  // Choose endpoint based on tax type
-  const endpoint =
-    taxType === 'profit'
-      ? 'http://localhost:7000/api/payments/profit-tax'
-      : 'http://localhost:7000/api/payments/vat';
+  const endpoint = `http://localhost:7000/api/payments/payroll/${payrollMonthId}`;
 
   try {
     const res = await fetch(endpoint, {
@@ -98,9 +102,9 @@ console.log(payload)
             >
               <option value="profit">Profit Tax</option>
               <option value="vat">Net VAT</option>
+              <option value="payroll">Payroll Tax</option>
             </select>
           </div>
-          {/* ...rest of your form fields... */}
           <div>
             <label className="block font-medium mb-1">First Name</label>
             <input
@@ -138,8 +142,13 @@ console.log(payload)
               required
             />
           </div>
-                    <input type="hidden" value={month} name="month" />
-          <input type="hidden" value={year} name="year" />
+          {/* Hidden fields for VAT */}
+          {taxType === 'vat' && (
+            <>
+              <input type="hidden" value={month} name="month" />
+              <input type="hidden" value={year} name="year" />
+            </>
+          )}
           {amount && (
             <div className="bg-blue-50 p-4 rounded-lg mt-2">
               <div className="text-sm font-medium text-blue-900">Amount to Pay</div>

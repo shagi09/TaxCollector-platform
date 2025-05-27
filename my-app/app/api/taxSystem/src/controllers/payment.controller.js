@@ -27,7 +27,10 @@ exports.payrollPayment = async (req, res) => {
   try {
     const { amount, email, firstName, lastName, phone } = req.body;
     const { payrollMonthId } = req.params;
+    console.log(req.user)
     const userId = req.user.id
+
+    
 
     const tx_ref = "chewatatest-" + Date.now();
 
