@@ -26,6 +26,7 @@ app.use('/api/profitTax', require('./routes/profitTax.routes'))
 app.use('/api/receipt', require('./routes/reciept.routes'))
 app.use('/api/payments', require('./routes/payment.routes'))
 app.use('/api/vat', require('./routes/vat.routes'))
+app.use('/api/history', require('./routes/taxHistory.routes'))
 
 
 
