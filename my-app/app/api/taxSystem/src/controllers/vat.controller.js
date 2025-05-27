@@ -45,7 +45,7 @@ exports.getVATSummaryByYear = async (req, res) => {
         existingRecord.amount = netVAT;
         await existingRecord.save();
       } else {
-        await Vat.create({
+        record = await Vat.create({
           userId,
           year,
           month: i + 1,
@@ -59,7 +59,8 @@ exports.getVATSummaryByYear = async (req, res) => {
         month: i + 1,
         incomeVAT,
         expenseVAT,
-        netVAT
+        netVAT,
+        vatId: record._id  // Include VAT record ID
       });
     }
 

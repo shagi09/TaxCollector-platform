@@ -34,7 +34,7 @@ exports.profitTax = async (req, res) => {
       existing.taxAmount = tax;
       await existing.save();
     } else {
-      await ProfitTax.create({
+      existing =  await ProfitTax.create({
         userId,
         income: totalIncome,
         expense: totalExpense,
@@ -50,7 +50,8 @@ exports.profitTax = async (req, res) => {
       totalIncome,
       totalExpense,
       profit,
-      tax
+      tax,
+      profitTaxId : existing._id
     });
 
   } catch (error) {
