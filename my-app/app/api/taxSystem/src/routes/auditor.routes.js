@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { loginAuditor, listTaxPayers, getTaxpayerById, getIncomesByYear, getIncomesByYearAndMonth, getExpensesByYear, getExpensesByYearAndMonth, getPayrollAuditByTaxpayer, getVatAuditByTaxpayer  } = require('../controllers/auditor.controller');
+const { loginAuditor, listTaxPayers, getTaxpayerById, getIncomesByYear, getIncomesByYearAndMonth, getExpensesByYear, getExpensesByYearAndMonth, getPayrollAuditByTaxpayer, getVatAuditByTaxpayer, getProfitTaxAuditByTaxpayer, addUserToBlacklist  } = require('../controllers/auditor.controller');
 const { isLogin, verifyAuditor } = require('../middlewares/authMiddleware')
 
 
