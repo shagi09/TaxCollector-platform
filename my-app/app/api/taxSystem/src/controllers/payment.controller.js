@@ -10,16 +10,17 @@ const CHAPA_SECRET_KEY = 'Bearer CHASECK_TEST-E2XnZBkD5AqYSXud9MWRnqHtRqgqZYPm';
 
 // === Helper to prepare Chapa payment ===
 const initiateChapaPayment = async (body) => {
-  const options = {
-    method: 'POST',
-    url: 'https://api.chapa.co/v1/transaction/initialize',
-    headers: {
-      Authorization: CHAPA_SECRET_KEY,
-      'Content-Type': 'application/json',
-    },
-    data: body,
-  };
-  return await axios(options);
+    const options = {
+        method:"POST",
+        url:"https://api.chapa.co/v1/transaction/initialize",
+        headers: {
+          Authorization: CHAPA_SECRET_KEY, // Replace with your Chapa test key
+          "Content-Type": "application/json",
+        },
+        data:body,
+      };
+
+    return await axios(options);
 };
 
 // === PAYROLL PAYMENT CONTROLLER ===
@@ -28,12 +29,12 @@ exports.payrollPayment = async (req, res) => {
     const { amount, email, firstName, lastName, phone } = req.body;
     const { payrollMonthId } = req.params;
     console.log(req.user)
+    console.log({ amount, email, firstName, lastName, phone } )
     const userId = req.user.id
 
     
 
     const tx_ref = "chewatatest-" + Date.now();
-
     const payroll = await PayrollRecord.findOne({ 'months._id': payrollMonthId });
     if (!payroll) return res.status(404).json({ error: 'Payroll month not found' });
 
@@ -54,37 +55,44 @@ exports.payrollPayment = async (req, res) => {
       month: matchedMonth.month,
       year: payroll.year
     });
-
-    const chapaBody = {
-      amount,
-      currency: 'ETB',
-      email,
-      first_name: firstName,
-      last_name: lastName,
-      phone_number: phone,
-      tx_ref,
-      callback_url: 'https://webhook.site/dummy-callback-url',
-      return_url: `http://localhost:3000/transactions/${audit._id}`,
-      customization: {
-        title: 'Payroll Tax Payment',
-        description: 'Payroll tax online payment',
-      },
-      meta: {
-        hide_receipt: 'true',
-      },
+  
+    const body = {
+      "amount": String(amount),
+      "currency": 'ETB',
+      "email":email,
+      "first_name": firstName,
+      "last_name": lastName,
+      "phone_number": phone,
+      "tx_ref": tx_ref,
+       "callback_url": "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
+      "return_url": `http://localhost:3000/payments`,
+      "customization[title]": "Payment for my favourite merchant",
+      "customization[description]": "I love online payments",
+      "meta[hide_receipt]": "true"
     };
-
-    const response = await initiateChapaPayment(chapaBody);
-    audit.checkout_url = response.data.data.checkout_url;
-    await audit.save();
-
+       const options = {
+        method: "POST",
+        url: "https://api.chapa.co/v1/transaction/initialize",
+        headers: {
+          Authorization: "Bearer CHASECK_TEST-E2XnZBkD5AqYSXud9MWRnqHtRqgqZYPm", // Replace with your Chapa test key
+          "Content-Type": "application/json",
+        },
+        data: body,
+      };
+     // console.log(options)
+       //console.log(body)
+    const response = await axios(options);
+    const chapaResponse = response.data;
+   console.log(chapaResponse)
+   console.log(chapaResponse.data.checkout_url)
     res.status(201).json({
-      message: 'Payroll payment initiated successfully',
-      paymentUrl: audit.checkout_url,
+      message: "successfully creted",
+      paymentUrl: chapaResponse.data.checkout_url,
     });
 
   } catch (error) {
-    console.error('Payroll payment error:', error);
+    console.error('Payroll payment error' , error.message);
+    console.error(error);
     res.status(500).json({ message: 'Failed to initialize payroll payment' });
   }
 };
@@ -92,7 +100,7 @@ exports.payrollPayment = async (req, res) => {
 // === PAYROLL TRANSACTION RECEIPT ===
 exports.getPayrollReceipt = async (req, res) => {
   try {
-    const audit = await AuditRecords.findById(req.params.id);
+    const audit = await PayrollAuditRecords.findById(req.params.id);
     if (!audit) return res.status(404).json({ message: 'Transaction not found' });
 
     const payroll = await PayrollRecord.findOne({ 'months._id': audit.payrollMonthId });
@@ -102,6 +110,7 @@ exports.getPayrollReceipt = async (req, res) => {
     if (!targetMonth) return res.status(404).json({ message: 'Month not found' });
 
     targetMonth.taxStatus = 'paid';
+    console.log(targetMonth.taxStatus)
     await payroll.save();
 
     res.status(200).json({

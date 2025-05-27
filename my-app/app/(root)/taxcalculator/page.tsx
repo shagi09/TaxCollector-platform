@@ -30,6 +30,8 @@ const ProfitTaxPage = () => {
         });
         if (response.ok) {
           const data = await response.json();
+          localStorage.setItem('profitTaxId',data.profitTaxId)
+          console.log(data)
           setTaxData(data);
         } else {
           toast.error('Failed to fetch profit tax data.');

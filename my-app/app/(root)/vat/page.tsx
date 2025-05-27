@@ -94,6 +94,7 @@ export default function VATSummaryPage() {
               localStorage.setItem('netVAT', row.netVAT);
               localStorage.setItem('vatMonth', row.month);
               localStorage.setItem('vatYear', selectedYear);
+              localStorage.setItem('vatId', row.vatId)
               router.push('/payments');
             }}
             className="bg-black hover:bg-gray-500 text-white px-4 py-2 rounded flex items-center gap-2"

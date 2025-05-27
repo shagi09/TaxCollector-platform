@@ -34,24 +34,47 @@ export default function PaymentInterface() {
 const handlePayment = async (e: React.FormEvent) => {
   e.preventDefault();
   const token = localStorage.getItem('token');
-  const payrollMonthId = localStorage.getItem('payrollMonthId'); // <-- get from localStorage
+  let endpoint = '';
+  let payload: any = {};
 
-  if (!payrollMonthId) {
-    toast.error('Payroll Month ID is missing.');
+  if (taxType === 'payroll') {
+    const payrollMonthId = localStorage.getItem('payrollMonthId');
+    if (!payrollMonthId) {
+      toast.error('Payroll Month ID is missing.');
+      return;
+    }
+    endpoint = `http://localhost:7000/api/payments/payroll/${payrollMonthId}`;
+    payload = {
+      amount: Number(amount),
+      email,
+      firstName,
+      lastName,
+      phone,
+    };
+  } else if (taxType === 'profit') {
+    endpoint = `http://localhost:7000/api/payments/profit`;
+    payload = {
+      amount: Number(amount),
+      email,
+      firstName,
+      lastName,
+      phone,
+    };
+  } else if (taxType === 'vat') {
+    endpoint = `http://localhost:7000/api/payments/vat`;
+    payload = {
+      amount: Number(amount),
+      email,
+      firstName,
+      lastName,
+      phone,
+    };
+  } else {
+    toast.error('Invalid tax type selected.');
     return;
   }
 
   setIsProcessing(true);
-
-  const payload = {
-    amount,
-    email,
-    firstName,
-    lastName,
-    phone,
-  };
-
-  const endpoint = `http://localhost:7000/api/payments/payroll/${payrollMonthId}`;
 
   try {
     const res = await fetch(endpoint, {
