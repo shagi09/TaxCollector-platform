@@ -115,7 +115,10 @@ exports.addPayrollRecord = async (req, res) => {
     }
 
     const payrollMonthId = month._id
-
+    console.log(payrollMonthId)
+    console.log(month)
+    console.log(month._id)
+    
     res.status(200).json({
       year,
       month,
