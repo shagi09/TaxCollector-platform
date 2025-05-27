@@ -108,7 +108,7 @@ const LandingPage = () =>{
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <Building2 className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">TaxPortal</span>
+              <span className="text-xl font-bold text-gray-900">TaxPay</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -173,9 +173,6 @@ const LandingPage = () =>{
       <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-8">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-              Trusted by 50,000+ taxpayers
-            </span>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
               Modern Tax Collection
               <br />
@@ -252,7 +249,7 @@ const LandingPage = () =>{
                     <span>Track payment history</span>
                   </div>
                 </div>
-                <button onClick={()=>route.push('/')} className="w-full mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                <button onClick={()=>route.push('/auth/Register')} className="w-full mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
                   Get Started as Taxpayer
                 </button>
               </div>

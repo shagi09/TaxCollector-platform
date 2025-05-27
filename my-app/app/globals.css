@@ -1,2 +1,10 @@
 @import "tailwindcss";
+/* Theme */
+@import 'primereact/resources/themes/lara-light-indigo/theme.css';  
+
+/* Core CSS */
+@import 'primereact/resources/primereact.min.css';  
+
+/* Icons */
+@import 'primeicons/primeicons.css';
 
