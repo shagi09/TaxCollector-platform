@@ -1,5 +1,5 @@
 const axios = require('axios');
-const AuditRecords = require('../models/payrollAuditRecord.model'); 
+const PayrollAuditRecords = require('../models/payrollAuditRecord.model'); 
 const VatAuditRecords = require('../models/vatAuditRecord.model'); 
 const ProfitTaxAuditRecords = require('../models/profitTaxAuditRecord.model'); 
 const PayrollRecord = require('../models/payrollRecord');
@@ -27,6 +27,7 @@ exports.payrollPayment = async (req, res) => {
   try {
     const { amount, email, firstName, lastName, phone } = req.body;
     const { payrollMonthId } = req.params;
+    const userId = req.user.id
 
     const tx_ref = "chewatatest-" + Date.now();
 
@@ -36,7 +37,8 @@ exports.payrollPayment = async (req, res) => {
     const matchedMonth = payroll.months.id(payrollMonthId);
     if (!matchedMonth) return res.status(404).json({ error: 'Month not found in payroll' });
 
-    const audit = await AuditRecords.create({
+    const audit = await PayrollAuditRecords.create({
+      userId,
       amount,
       currency: 'ETB',
       email,
@@ -113,9 +115,9 @@ exports.getPayrollReceipt = async (req, res) => {
 // === VAT PAYMENT CONTROLLER ===
 exports.vatPayment = async (req, res) => {
   try {
-    const {  amount, email, firstName, lastName, phone } = req.body;
+    const { amount, email, firstName, lastName, phone } = req.body;
+    const { vatId } = req.params; // Correct destructuring
 
-    const { vatId } = req.params.id
     // 1. Ensure vatId is provided
     if (!vatId) {
       return res.status(400).json({ message: 'VAT ID is required' });
@@ -127,10 +129,12 @@ exports.vatPayment = async (req, res) => {
       return res.status(404).json({ message: 'VAT record not found' });
     }
 
+    const userId = req.user.id; // ✅ Extract user ID from auth
     const tx_ref = 'vat-' + Date.now();
 
     // 3. Create the VAT audit record
     const audit = await VatAuditRecords.create({
+      userId, // ✅ Store the userId
       amount: amount,
       currency: 'ETB',
       email,
@@ -141,7 +145,7 @@ exports.vatPayment = async (req, res) => {
       date: Date.now(),
       month: vat.month,
       year: vat.year,
-      vatId: vat._id, // reference to VAT record
+      vatId: vat._id,
     });
 
     // 4. Prepare Chapa payment body
@@ -213,6 +217,8 @@ exports.getVatReceipt = async (req, res) => {
   try {
     const { id: profitTaxId } = req.params;
     const { amount, email, firstName, lastName, phone } = req.body;
+    const userId = req.user.id; 
+
 
     const profitTaxRecord = await ProfitTax.findById(profitTaxId);
     if (!profitTaxRecord) {
@@ -224,6 +230,7 @@ exports.getVatReceipt = async (req, res) => {
 
     // Create audit record
     const audit = await ProfitTaxAuditRecords.create({
+      userId,
       amount,
       currency: 'ETB',
       email,

@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const vatSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TaxPayer', // Replace 'User' if your user model is named differently (e.g., 'Taxpayer')
+    required: true,
+  },
   incomeVat: {
     type: Number,
     required: true,

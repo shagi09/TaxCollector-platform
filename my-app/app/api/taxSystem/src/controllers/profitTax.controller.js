@@ -8,6 +8,7 @@ exports.profitTax = async (req, res) => {
     const userId = req.user._id;
     const year = parseInt(req.params.year);
 
+
     if (!year || isNaN(year)) {
       return res.status(400).json({ error: 'Invalid or missing year parameter' });
     }

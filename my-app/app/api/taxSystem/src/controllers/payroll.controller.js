@@ -171,7 +171,6 @@ exports.updatePayroll = async (req, res) => {
 };
 
 
-
 // Delete a payroll record
 exports.deletePayroll = async (req, res) => {
   try {
