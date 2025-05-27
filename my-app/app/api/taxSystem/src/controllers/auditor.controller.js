@@ -2,6 +2,11 @@ const TaxPayer = require('../models/taxPayer.model');
 const { signToken } = require('../utils/jwt');
 const Auditor = require('../models/auditor.model')
 const bcrypt = require("bcrypt")
+const Income = require('../models/income.model')
+const Expense = require('../models/expense.model')
+const PayrollAuditRecords = require('../models/payrollAuditRecord.model');
+const VatAuditRecords = require('../models/vatAuditRecord.model');
+const ProfitTaxAuditRecords = require('../models/profitTaxAuditRecord.model');
 
 
 exports.listTaxPayers = async (req, res) => {
@@ -17,7 +22,6 @@ exports.listTaxPayers = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve taxpayer list' });
   }
 };
-
 
 exports.loginAuditor = async (req, res) => {
   try {
@@ -54,3 +58,126 @@ exports.loginAuditor = async (req, res) => {
   }
 };
 
+exports.getTaxpayerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const taxpayer = await TaxPayer.findById(id);
+
+    if (!taxpayer) {
+      return res.status(404).json({ message: 'Taxpayer not found' });
+    }
+
+    res.status(200).json({ taxpayer });
+  } catch (error) {
+    console.error('Error fetching taxpayer:', error);
+    res.status(500).json({ message: 'Failed to fetch taxpayer' });
+  }
+};
+
+exports.getIncomesByYear = async (req, res) => {
+  try {
+    const { id, year } = req.params;
+
+    const incomes = await Income.find({ userId: id, year });
+
+    res.status(200).json({ incomes });
+  } catch (error) {
+    console.error('Error fetching incomes by year:', error);
+    res.status(500).json({ message: 'Failed to fetch incomes for the year' });
+  }
+};
+
+exports.getIncomesByYearAndMonth = async (req, res) => {
+  try {
+    const { id, year, month } = req.params;
+
+    const incomes = await Income.find({ userId: id, year, month });
+
+    res.status(200).json({ incomes });
+  } catch (error) {
+    console.error('Error fetching incomes by year and month:', error);
+    res.status(500).json({ message: 'Failed to fetch incomes for the year and month' });
+  }
+};
+
+exports.getExpensesByYear = async (req, res) => {
+  try {
+    const { id, year } = req.params;
+
+    const expenses = await Expense.find({ userId: id, year });
+
+    res.status(200).json({ expenses });
+  } catch (error) {
+    console.error('Error fetching expenses by year:', error);
+    res.status(500).json({ message: 'Failed to fetch expenses for the year' });
+  }
+};
+
+
+exports.getExpensesByYearAndMonth = async (req, res) => {
+  try {
+    const { id, year, month } = req.params;
+
+    const expenses = await Expense.find({ userId: id, year, month });
+
+    res.status(200).json({ expenses });
+  } catch (error) {
+    console.error('Error fetching expenses by year and month:', error);
+    res.status(500).json({ message: 'Failed to fetch expenses for the year and month' });
+  }
+};
+
+
+exports.getPayrollAuditByTaxpayer = async (req, res) => {
+  try {
+    const { taxpayerId, year, month } = req.params;
+
+    const records = await PayrollAuditRecords.find({
+      userId: taxpayerId,
+      year: parseInt(year),
+      month : parseInt(month)
+    });
+
+    res.status(200).json({ records });
+  } catch (error) {
+    console.error('Error fetching payroll audit records:', error);
+    res.status(500).json({ message: 'Failed to fetch payroll audit records' });
+  }
+};
+
+
+
+exports.getVatAuditByTaxpayer = async (req, res) => {
+  try {
+    const { taxpayerId, year, month } = req.params;
+
+    const records = await VatAuditRecords.find({
+      userId: taxpayerId,
+      year: parseInt(year),
+      month : parseInt(month)
+    });
+
+    res.status(200).json({ records });
+  } catch (error) {
+    console.error('Error fetching VAT audit records:', error);
+    res.status(500).json({ message: 'Failed to fetch VAT audit records' });
+  }
+};
+
+
+
+exports.getProfitTaxAuditByTaxpayer = async (req, res) => {
+  try {
+    const { taxpayerId, year } = req.params;
+
+    const records = await ProfitTaxAuditRecords.find({
+      userId: taxpayerId,
+      year: parseInt(year),
+    });
+
+    res.status(200).json({ records });
+  } catch (error) {
+    console.error('Error fetching profit tax audit records:', error);
+    res.status(500).json({ message: 'Failed to fetch profit tax audit records' });
+  }
+};

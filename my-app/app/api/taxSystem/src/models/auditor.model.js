@@ -13,6 +13,11 @@ const auditorSchema = new mongoose.Schema({
     type: String,
     unique: true,
     required: true
+  },
+  role: {
+    type: String,
+    enum: ['auditor'], // default role for city officials
+    default: 'auditor',
   }
 }, { timestamps: true });
 
