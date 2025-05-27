@@ -19,9 +19,12 @@
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-
+  type: {
+    type: String,
+    default: 'PAYROLL',
+  },
   month: { type: Number },
   year: { type: Number },
 }, { timestamps: true });
 
-module.exports = mongoose.model('AuditRecords', auditRecordSchema);
+module.exports = mongoose.model('PayrollAuditRecords', auditRecordSchema);

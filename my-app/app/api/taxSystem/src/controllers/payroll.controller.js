@@ -114,9 +114,12 @@ exports.addPayrollRecord = async (req, res) => {
       await payrollYear.save();
     }
 
+    const payrollMonthId = month._id
+
     res.status(200).json({
       year,
       month,
+      payrollMonthId,
       records: monthRecord.records,
       totalSalary,
       totalTax,

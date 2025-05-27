@@ -7,6 +7,8 @@ const Expense = require('../models/expense.model')
 const PayrollAuditRecords = require('../models/payrollAuditRecord.model');
 const VatAuditRecords = require('../models/vatAuditRecord.model');
 const ProfitTaxAuditRecords = require('../models/profitTaxAuditRecord.model');
+const Blacklist = require('../models/blacklist.model')
+const Notification = require('../models/notification.model')
 
 
 exports.listTaxPayers = async (req, res) => {
@@ -113,7 +115,6 @@ exports.getExpensesByYear = async (req, res) => {
   }
 };
 
-
 exports.getExpensesByYearAndMonth = async (req, res) => {
   try {
     const { id, year, month } = req.params;
@@ -126,7 +127,6 @@ exports.getExpensesByYearAndMonth = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch expenses for the year and month' });
   }
 };
-
 
 exports.getPayrollAuditByTaxpayer = async (req, res) => {
   try {
@@ -145,8 +145,6 @@ exports.getPayrollAuditByTaxpayer = async (req, res) => {
   }
 };
 
-
-
 exports.getVatAuditByTaxpayer = async (req, res) => {
   try {
     const { taxpayerId, year, month } = req.params;
@@ -164,8 +162,6 @@ exports.getVatAuditByTaxpayer = async (req, res) => {
   }
 };
 
-
-
 exports.getProfitTaxAuditByTaxpayer = async (req, res) => {
   try {
     const { taxpayerId, year } = req.params;
@@ -179,5 +175,53 @@ exports.getProfitTaxAuditByTaxpayer = async (req, res) => {
   } catch (error) {
     console.error('Error fetching profit tax audit records:', error);
     res.status(500).json({ message: 'Failed to fetch profit tax audit records' });
+  }
+};
+
+exports.addUserToBlacklist = async (req, res) => {
+  try {
+    const { auditRecordId, userId } = req.params;
+
+    // First try PayrollAuditRecords (uses `type` property)
+    const payrollRecord = await PayrollAuditRecords.findById(auditRecordId);
+    if (payrollRecord) {
+      auditType = payrollRecord.type;
+     }
+
+    const profitRecord = await ProfitTaxAuditRecords.findById(auditRecordId);
+     if (profitRecord) {
+      auditType = profitRecord.type;
+     }
+
+    const vatRecord = await VatAuditRecords.findById(auditRecordId);
+     if (vatRecord) {
+      auditType = profitRecord.type;
+     }
+
+    if (!auditType || !userId) {
+      return res.status(404).json({ message: 'Audit record not found' });
+    }
+
+    // Create blacklist entry
+    const blacklist = await Blacklist.create({
+      userId,
+      auditRecordId,
+      auditType,
+    });
+
+    // Send notification
+    const notification = await Notification.create({
+      userId,
+      message: `You have been blacklisted due to a ${auditType.toLowerCase()} audit issue.`,
+    });
+
+    res.status(201).json({
+      message: 'User blacklisted and notified.',
+      blacklist,
+      notification,
+    });
+  } catch (error) {
+    console.error('addUserToBlacklist error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
