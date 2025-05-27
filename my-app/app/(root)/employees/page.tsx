@@ -52,6 +52,10 @@ const PayrollPage = () => {
         setDueDate(data.dueDate || '');
         setTaxStatus(data.taxStatus || '');
         setPenalty(data.penalty || 0);
+
+          if (data.payrollMonthId) {
+    localStorage.setItem('payrollMonthId', data.payrollMonthId);
+  }
       } else {
         setRecords([]);
         setTotalSalary(0);
@@ -262,7 +266,6 @@ const PayrollPage = () => {
                         localStorage.setItem('payrollTax', emp.tax?.$numberDecimal ? emp.tax.$numberDecimal : emp.tax);
                         localStorage.setItem('payrollMonth', month.toString());
                         localStorage.setItem('payrollYear', year.toString());
-                        localStorage.setItem('payrollMonthId', emp._id); // Save payroll record's _id for payment
                         router.push('/payments');
                       }}
                       className="bg-black flex items-center justify-center hover:bg-gray-800 text-white rounded-lg px-4"
