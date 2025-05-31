@@ -68,6 +68,15 @@ const DashboardSidebar = () => {
               <span>VAT</span>
             </Link>
           </li>
+                              <li>
+            <Link
+              href="/notifications"
+              className="flex items-center gap-2 p-4 w-full text-left rounded hover:bg-gray-700 transition"
+            >
+              <TbReceiptTax className="text-xl" />
+              <span>Notifications</span>
+            </Link>
+          </li>
         </ul>
       </nav>
       <button

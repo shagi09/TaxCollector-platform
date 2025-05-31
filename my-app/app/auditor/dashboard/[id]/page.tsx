@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'next/navigation';
-
+import { useParams , useRouter } from 'next/navigation';
 const YEARS = [2021, 2022, 2023, 2024, 2025];
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -27,7 +26,7 @@ export default function TaxpayerDetailPage() {
   const [vatAudit, setVatAudit] = useState([]);
   const [profitTaxAudit, setProfitTaxAudit] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const router=useRouter()
   // Fetch incomes and expenses by year or by year and month
   useEffect(() => {
     if (!id) return;
@@ -98,6 +97,12 @@ export default function TaxpayerDetailPage() {
     fetchData();
   }, [id, year, month]);
 
+  // ...existing code...
+
+
+
+
+
   return (
     <div className="max-w-5xl mx-auto p-8">
       <h1 className="text-2xl font-bold mb-4">Taxpayer Details</h1>
@@ -140,6 +145,7 @@ export default function TaxpayerDetailPage() {
                 <th className="py-2 px-4">Source</th>
                 <th className="py-2 px-4">Amount</th>
                 <th className="py-2 px-4">VAT</th>
+                <th className="py-2 px-4">Receipt</th>
                 <th className="py-2 px-4">Month</th>
               </tr>
             </thead>
@@ -154,6 +160,18 @@ export default function TaxpayerDetailPage() {
                     <td className="py-2 px-4">{inc.source || '-'}</td>
                     <td className="py-2 px-4">{getDecimal(inc.amount)}</td>
                     <td className="py-2 px-4">{getDecimal(inc.vat)}</td>
+                                       <td className="py-2 px-4">
+                      {inc.receiptUrl ? (
+                          <button
+      onClick={() => router.push(`/View/${inc.filename}`)}
+      className="text-blue-500 underline cursor-pointer"
+    >
+      View Receipt
+    </button>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
                     <td className="py-2 px-4">{MONTHS[(inc.month || 1) - 1]}</td>
                   </tr>
                 ))
@@ -189,14 +207,12 @@ export default function TaxpayerDetailPage() {
                     </td>
                     <td className="py-2 px-4">
                       {exp.receiptUrl ? (
-                        <a
-                          href={`http://localhost:7000${exp.receiptUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline"
-                        >
-                          View
-                        </a>
+                          <button
+      onClick={() => router.push(`/View/${exp.filename}`)}
+      className="text-blue-500 underline cursor-pointer"
+    >
+      View Receipt
+    </button>
                       ) : (
                         '-'
                       )}
@@ -214,24 +230,25 @@ export default function TaxpayerDetailPage() {
               <table className="min-w-full bg-white shadow rounded mb-6">
                 <thead>
                   <tr className="bg-gray-200">
-                    <th className="py-2 px-4">Amount</th>
-                    <th className="py-2 px-4">Date</th>
+                    <th className="py-2 px-0">Amount</th>
+                    <th className="py-2 px-0">Date</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {payrollAudit.length === 0 ? (
-                    <tr>
-                      <td colSpan={2} className="text-center py-4 text-gray-500">No payroll audit records.</td>
-                    </tr>
-                  ) : (
-                    payrollAudit.map((rec, idx) => (
-                      <tr key={idx} className="border-b">
-                        <td className="py-2 px-4">{getDecimal(rec.salary)}</td>
-                        <td className="py-2 px-4">{rec.date ? new Date(rec.date).toLocaleDateString() : '-'}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
+<tbody>
+  {payrollAudit.length === 0 ? (
+    <tr>
+      <td colSpan={3} className="text-center py-4 text-gray-500">No Payroll audit records.</td>
+    </tr>
+  ) : (
+    payrollAudit.map((rec, idx) => (
+      <tr key={idx} className="border-b">
+        <td className="py-2 px-8">{getDecimal(rec.amount)}</td>
+        <td className="py-2 px-8">{rec.date ? new Date(rec.date).toLocaleDateString() : '-'}</td>
+
+      </tr>
+    ))
+  )}
+</tbody>
               </table>
 
               <h2 className="text-xl font-semibold mt-6 mb-2">VAT Audit Records</h2>
@@ -242,20 +259,20 @@ export default function TaxpayerDetailPage() {
                     <th className="py-2 px-4">Date</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {vatAudit.length === 0 ? (
-                    <tr>
-                      <td colSpan={2} className="text-center py-4 text-gray-500">No VAT audit records.</td>
-                    </tr>
-                  ) : (
-                    vatAudit.map((rec, idx) => (
-                      <tr key={idx} className="border-b">
-                        <td className="py-2 px-4">{getDecimal(rec.amount)}</td>
-                        <td className="py-2 px-4">{rec.date ? new Date(rec.date).toLocaleDateString() : '-'}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
+<tbody>
+  {vatAudit.length === 0 ? (
+    <tr>
+      <td colSpan={3} className="text-center py-4 text-gray-500">No VAT audit records.</td>
+    </tr>
+  ) : (
+    vatAudit.map((rec, idx) => (
+      <tr key={idx} className="border-b">
+        <td className="py-2 px-4">{getDecimal(rec.amount)}</td>
+        <td className="py-2 px-4">{rec.date ? new Date(rec.date).toLocaleDateString() : '-'}</td>
+      </tr>
+    ))
+  )}
+</tbody>
               </table>
             </>
           )}
@@ -280,6 +297,14 @@ export default function TaxpayerDetailPage() {
                       <tr key={idx} className="border-b">
                         <td className="py-2 px-4">{getDecimal(rec.amount)}</td>
                         <td className="py-2 px-4">{rec.year}</td>
+                                <td className="py-2 px-4">
+          <button
+            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800"
+            onClick={() => handleBlacklist(rec._id)}
+          >
+            Blacklist
+          </button>
+        </td>
                       </tr>
                     ))
                   )}

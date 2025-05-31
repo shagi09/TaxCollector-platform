@@ -13,51 +13,68 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Paginator } from 'primereact/paginator';
 import { Tooltip } from 'primereact/tooltip';
 
-interface Invoice {
-  id: number;
-  name: string;
+interface AuditRecord {
+  _id: string;
+  amount: number;
+  currency: string;
   email: string;
+  firstName: string;
+  lastName: string;
   phone: string;
+  tx_ref: string;
   date: string;
-  amount: string;
   status?: 'paid' | 'pending' | 'overdue';
+  // Add other fields as needed
 }
 
+const typeOptions = [
+  { label: 'Payroll', value: 'PAYROLL' },
+  { label: 'VAT', value: 'VAT' },
+  { label: 'Profit', value: 'PROFIT' },
+];
+
 const InvoiceListPage = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [scanning, setScanning] = useState(false);
+  const [loading, setLoading] = useState<AuditRecord[]>([]);
+  const [records, setRecords] = useState<AuditRecord[]>([]);
+const [auditType, setAuditType] = useState('PAYROLL');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const codeReader = useRef(new BrowserMultiFormatReader());
+    const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [date, setDate] = useState<Date | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const codeReader = useRef(new BrowserMultiFormatReader());
 
-  // Sample data with more variety
-  useEffect(() => {
-    const statuses: ('paid' | 'pending' | 'overdue')[] = ['paid', 'pending', 'overdue'];
-    const sampleData: Invoice[] = [
-      { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', date: '2023-05-01', amount: '$100.00', status: 'paid' },
-      { id: 2, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', date: '2023-05-02', amount: '$150.00', status: 'pending' },
-      { id: 3, name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', date: '2023-05-03', amount: '$200.00', status: 'overdue' },
-      { id: 4, name: 'Jane Smith', email: 'jane@example.com', phone: '987-654-3210', date: '2023-05-04', amount: '$250.00', status: 'paid' },
-      { id: 5, name: 'Jane Smith', email: 'jane@example.com', phone: '987-654-3210', date: '2023-05-05', amount: '$300.00', status: 'pending' },
-      { id: 6, name: 'Robert Johnson', email: 'robert@example.com', phone: '555-123-4567', date: '2023-05-06', amount: '$350.00', status: 'paid' },
-      { id: 7, name: 'Emily Davis', email: 'emily@example.com', phone: '444-789-1234', date: '2023-05-07', amount: '$400.00', status: 'overdue' },
-      { id: 8, name: 'Michael Wilson', email: 'michael@example.com', phone: '333-456-7890', date: '2023-05-08', amount: '$450.00', status: 'paid' },
-      { id: 9, name: 'Sarah Brown', email: 'sarah@example.com', phone: '222-987-6543', date: '2023-05-09', amount: '$500.00', status: 'pending' },
-      { id: 10, name: 'David Taylor', email: 'david@example.com', phone: '111-654-3210', date: '2023-05-10', amount: '$550.00', status: 'paid' },
-    ];
-    setInvoices(sampleData);
-  }, []);
+useEffect(() => {
+    const fetchAuditHistory = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:7000/api/history/${auditType}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          console.log(data)
+          setRecords(data.records || []);
+        } else {
+          setRecords([]);
+        }
+      } catch {
+        setRecords([]);
+      }
+      setLoading(false);
+    };
+    fetchAuditHistory();
+  }, [auditType]);
 
   const downloadAsCSV = () => {
     const headers = ['ID', 'Name', 'Email', 'Phone', 'Date', 'Amount', 'Status'];
     const csvContent = [
       headers.join(','),
-      ...invoices.map(invoice => 
-        `${invoice.id},"${invoice.name}","${invoice.email}","${invoice.phone}","${invoice.date}","${invoice.amount}","${invoice.status}"`
+      ...records.map(record => 
+        `${record.id},"${record.name}","${record.email}","${record.phone}","${record.date}","${record.amount}","${record.status}"`
       )
     ].join('\n');
 
@@ -131,13 +148,13 @@ const InvoiceListPage = () => {
     }
   };
 
-  const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = Object.values(invoice).some(
+  const filteredInvoices = records.filter(record => {
+    const matchesSearch = Object.values(record).some(
       value => value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     const matchesDate = date 
-      ? new Date(invoice.date).toDateString() === date.toDateString()
+      ? new Date(record.date).toDateString() === date.toDateString()
       : true;
     
     return matchesSearch && matchesDate;
@@ -237,7 +254,6 @@ const InvoiceListPage = () => {
             <table id="invoice-table" className="min-w-full">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="py-3 px-4 text-left font-semibold">ID</th>
                   <th className="py-3 px-4 text-left font-semibold">Name</th>
                   <th className="py-3 px-4 text-left font-semibold">Email</th>
                   <th className="py-3 px-4 text-left font-semibold">Phone</th>
@@ -246,36 +262,33 @@ const InvoiceListPage = () => {
                   <th className="py-3 px-4 text-center font-semibold">Status</th>
                 </tr>
               </thead>
-              <tbody>
-                {paginatedInvoices.length > 0 ? (
-                  paginatedInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">{invoice.id}</td>
-                      <td className="py-3 px-4 font-medium">{invoice.name}</td>
-                      <td className="py-3 px-4 text-blue-600 hover:underline cursor-pointer" 
-                          onClick={() => window.location.href = `mailto:${invoice.email}`}>
-                        {invoice.email}
+<tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="py-4 text-center text-gray-500">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : records.length > 0 ? (
+                  records.map((rec) => (
+                    <tr key={rec._id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 font-medium">{rec.firstName} {rec.lastName}</td>
+                      <td className="py-3 px-4">{rec.email}</td>
+                      <td className="py-3 px-4">{rec.phone}</td>
+                                            <td className="py-3 px-4">
+                        {rec.date ? new Date(rec.date).toLocaleDateString() : ''}
                       </td>
-                      <td className="py-3 px-4">{invoice.phone}</td>
-                      <td className="py-3 px-4">
-                        {new Date(invoice.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </td>
-                      <td className="py-3 px-4 text-right font-bold">
-                        {invoice.amount}
-                      </td>
+                      <td className="py-3 px-4">{rec.amount}</td>
+
                       <td className="py-3 px-4 text-center">
-                        {getStatusBadge(invoice.status)}
+                        {getStatusBadge( 'paid')}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td colSpan={7} className="py-4 text-center text-gray-500">
-                      No invoices found matching your criteria
+                      No records found for this type.
                     </td>
                   </tr>
                 )}

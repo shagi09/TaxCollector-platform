@@ -1,13 +1,16 @@
 'use client'
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 export default function TaxpayerListPage() {
+  const{id}=useParams()
   const [taxpayers, setTaxpayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const router = useRouter();
+  
 
 useEffect(() => {
   const fetchTaxpayers = async () => {
@@ -28,6 +31,31 @@ useEffect(() => {
   };
   fetchTaxpayers();
 }, []);
+
+const handleBlacklist = async (userId: string) => {
+  try {
+    const token = localStorage.getItem('official_token');
+    // Use the taxpayer id from the route as userId
+    const res = await fetch(
+      `http://localhost:7000/api/auditor/blacklist/${userId}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const data = await res.json();
+    if (res.ok) {
+      alert('User blacklisted and notified.');
+    } else {
+      alert(data.message || 'Failed to blacklist user.');
+    }
+  } catch (err) {
+    alert('Failed to blacklist user.');
+  }
+};
 
   const filtered = taxpayers.filter(tp =>
     tp.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,6 +104,14 @@ useEffect(() => {
                       View Details
                     </button>
                   </td>
+                          <td className="py-2 px-4">
+          <button
+            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800"
+            onClick={() => handleBlacklist(tp._id)}
+          >
+            Blacklist
+          </button>
+        </td>
                 </tr>
               ))
             )}

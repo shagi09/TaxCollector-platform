@@ -15,6 +15,6 @@ router.get('/expense/:id/:year/:month', isLogin, verifyAuditor, getExpensesByYea
 router.get('/audit/payroll/:taxpayerId/:year/:month', isLogin, verifyAuditor, getPayrollAuditByTaxpayer);
 router.get('/audit/vat/:taxpayerId/:year/:month', isLogin, verifyAuditor, getVatAuditByTaxpayer);
 router.get('/audit/profit/:taxpayerId/:year', isLogin, verifyAuditor, getProfitTaxAuditByTaxpayer);
-router.post('/blacklist/:userId/:auditRecordId' , isLogin, verifyAuditor, addUserToBlacklist)
+router.post('/blacklist/:userId' , isLogin, verifyAuditor, addUserToBlacklist)
 
 module.exports = router;

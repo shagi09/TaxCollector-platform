@@ -287,7 +287,7 @@ const LandingPage = () =>{
                     <span>Track delinquent accounts</span>
                   </div>
                 </div>
-                <button className="w-full mt-6 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                <button onClick={()=>route.push('/auditor/login')} className="w-full mt-6 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
                   Access Admin Portal
                 </button>
               </div>

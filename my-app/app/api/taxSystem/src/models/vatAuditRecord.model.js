@@ -15,7 +15,7 @@ const vatAuditRecordSchema = new mongoose.Schema({
   checkout_url: { type: String },
   date: { type: Date },
 
-  vatPeriodId: {
+  vatId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'VatPeriod', // You can define this model as a period container for VAT
     required: true,

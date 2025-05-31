@@ -168,13 +168,13 @@ export default function Dashboard() {
         <div className="rounded-lg border bg-white p-4 shadow">
           <h3 className="text-sm text-gray-500">Profit Tax ({CURRENT_YEAR})</h3>
           <p className="text-xl font-bold text-blue-600">
-            {currentProfitTax.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
+            {currentProfitTax.toLocaleString(undefined, { style: 'currency', currency: 'ETH' })}
           </p>
         </div>
         <div className="rounded-lg border bg-white p-4 shadow">
           <h3 className="text-sm text-gray-500">Payroll Tax ({CURRENT_YEAR})</h3>
           <p className="text-xl font-bold text-purple-600">
-            {currentPayrollTax.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
+            {currentPayrollTax.toLocaleString(undefined, { style: 'currency', currency: 'ETH' })}
           </p>
         </div>
         <div className="rounded-lg border bg-white p-4 shadow">

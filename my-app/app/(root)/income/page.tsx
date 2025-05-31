@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PlusIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const getYear = (dateString) => {
   if (!dateString) return '';
@@ -18,6 +19,8 @@ const IncomePage = () => {
   const [receipt, setReceipt] = useState(null);
   const [selectedYear, setSelectedYear] = useState('');
 
+  const router=useRouter()
+
   const fetchIncomes = async (year) => {
     try {
       const token = localStorage.getItem('token');
@@ -29,6 +32,7 @@ const IncomePage = () => {
       if (response.ok) {
         const data = await response.json();
         setIncomes(Array.isArray(data.incomes) ? data.incomes : []);
+        console.log(data.incomes);
       } else {
         toast.error('Failed to fetch Incomes.');
       }
@@ -233,16 +237,14 @@ const IncomePage = () => {
               <td className="py-2">
                 {new Date(income.paidDate).toLocaleDateString()}
               </td>
-              <td className="py-2">
+<td className="py-2">
                 {income.receiptUrl && (
-                  <a
-                    href={income.receiptUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500"
-                  >
-                    View Receipt
-                  </a>
+                  <button
+      onClick={() => router.push(`/View/${income.filename}`)}
+      className="text-blue-500 underline cursor-pointer"
+    >
+      View Receipt
+    </button>
                 )}
               </td>
               <td className="py-2">
@@ -255,10 +257,11 @@ const IncomePage = () => {
               </td>
             </tr>
           ))}
-        </tbody>
+        </tbody>              
       </table>
       <button
         type="button"
+        onClick={()=>{router.push('/payments')}}
         className="bg-black hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-2 mt-4"
       >
         Proceed

@@ -50,7 +50,7 @@ const ProfitTax = require('../models/profitTax.model')
       "phone_number": phone,
       "tx_ref": tx_ref,
        "callback_url": "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-      "return_url": `http://localhost:3000/payments`,
+      "return_url": `http://localhost:3000/transaction`,
       "customization[title]": "Payment for my favourite merchant",
       "customization[description]": "I love online payments",
       "meta[hide_receipt]": "true"
@@ -146,7 +146,7 @@ exports.vatPayment = async (req, res) => {
       "phone_number": phone,
       "tx_ref": tx_ref,
        "callback_url": "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-      "return_url": `http://localhost:3000/payments`,
+      "return_url": `http://localhost:3000/transaction`,
       "customization[title]": "Payment for my favourite merchant",
       "customization[description]": "I love online payments",
       "meta[hide_receipt]": "true"
@@ -219,7 +219,7 @@ exports.vatPayment = async (req, res) => {
       "phone_number": phone,
       "tx_ref": tx_ref,
        "callback_url": "https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60",
-      "return_url": `http://localhost:3000/payments`,
+      "return_url": `http://localhost:3000/transaction`,
       "customization[title]": "Payment for my favourite merchant",
       "customization[description]": "I love online payments",
       "meta[hide_receipt]": "true"

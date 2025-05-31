@@ -52,7 +52,8 @@ const handlePayment = async (e: React.FormEvent) => {
       phone,
     };
   } else if (taxType === 'profit') {
-    endpoint = `http://localhost:7000/api/payments/profit`;
+    const profitTaxId=localStorage.getItem('profitTaxId')
+    endpoint = `http://localhost:7000/api/payments/profit-tax/${profitTaxId}`;
     payload = {
       amount: Number(amount),
       email,
@@ -61,7 +62,8 @@ const handlePayment = async (e: React.FormEvent) => {
       phone,
     };
   } else if (taxType === 'vat') {
-    endpoint = `http://localhost:7000/api/payments/vat`;
+    const vatId=localStorage.getItem('vatId')
+    endpoint = `http://localhost:7000/api/payments/vat/${vatId}`;
     payload = {
       amount: Number(amount),
       email,

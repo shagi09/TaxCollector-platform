@@ -15,7 +15,7 @@ const profitTaxAuditRecordSchema = new mongoose.Schema({
   checkout_url: { type: String },
   date: { type: Date },
 
-  profitTaxPeriodId: {
+  profitTaxId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ProfitTaxPeriod', // Define this model for organizing annual profit tax entries
     required: true,

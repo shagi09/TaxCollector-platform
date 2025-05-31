@@ -15,14 +15,14 @@ exports.addIncome = async (req, res) => {
 
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
-
+    const filename = req.file.filename
     const income = await Income.create({
       amount,
       source,
       date,
       year,
       receiptUrl,
-      taxPeriodId,
+      filename,
       month,
       vat, 
       userId: req.user._id //"4a832c84c0ada085284abf30"// Assuming authentication middleware sets this
@@ -127,8 +127,8 @@ exports.deleteIncome = async (req, res) => {
     if (!income) {
       return res.status(404).json({ error: 'Expense not found or unauthorized' });
     }
-
-    await income.remove();
+       console.log(income)
+    await Income.findByIdAndDelete(income._id);
 
     res.json({ message: 'Income deleted successfully' });
   } catch (error) {

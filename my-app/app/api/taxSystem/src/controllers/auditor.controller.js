@@ -9,7 +9,7 @@ const VatAuditRecords = require('../models/vatAuditRecord.model');
 const ProfitTaxAuditRecords = require('../models/profitTaxAuditRecord.model');
 const Blacklist = require('../models/blacklist.model')
 const Notification = require('../models/notification.model')
-
+const mongoose = require('mongoose');
 
 exports.listTaxPayers = async (req, res) => {
   try {
@@ -137,8 +137,8 @@ exports.getPayrollAuditByTaxpayer = async (req, res) => {
       year: parseInt(year),
       month : parseInt(month)
     });
-
-    res.status(200).json({ records });
+    const payrollMonthId = records.payrollMonthId
+    res.status(200).json({ records, payrollMonthId });
   } catch (error) {
     console.error('Error fetching payroll audit records:', error);
     res.status(500).json({ message: 'Failed to fetch payroll audit records' });
@@ -155,7 +155,8 @@ exports.getVatAuditByTaxpayer = async (req, res) => {
       month : parseInt(month)
     });
 
-    res.status(200).json({ records });
+    const vatId = records.vatId; // Assuming vatId is part of the records
+    res.status(200).json({ records, vatId });
   } catch (error) {
     console.error('Error fetching VAT audit records:', error);
     res.status(500).json({ message: 'Failed to fetch VAT audit records' });
@@ -170,43 +171,39 @@ exports.getProfitTaxAuditByTaxpayer = async (req, res) => {
       userId: taxpayerId,
       year: parseInt(year),
     });
-
-    res.status(200).json({ records });
+    const profitTaxId = records.profitTaxId; // Assuming profitTaxId is part of the records
+    res.status(200).json({ records, profitTaxId });
   } catch (error) {
     console.error('Error fetching profit tax audit records:', error);
     res.status(500).json({ message: 'Failed to fetch profit tax audit records' });
   }
 };
 
-exports.addUserToBlacklist = async (req, res) => {
+ exports.addUserToBlacklist = async (req, res) => {
   try {
-    const { auditRecordId, userId } = req.params;
+    let { userId } = req.params;
 
-    // First try PayrollAuditRecords (uses `type` property)
-    const payrollRecord = await PayrollAuditRecords.findById(auditRecordId);
-    if (payrollRecord) {
-      auditType = payrollRecord.type;
-     }
-
-    const profitRecord = await ProfitTaxAuditRecords.findById(auditRecordId);
-     if (profitRecord) {
-      auditType = profitRecord.type;
-     }
-
-    const vatRecord = await VatAuditRecords.findById(auditRecordId);
-     if (vatRecord) {
-      auditType = profitRecord.type;
-     }
-
-    if (!auditType || !userId) {
-      return res.status(404).json({ message: 'Audit record not found' });
+    if (!userId) {
+      return res.status(400).json({ message: 'userId is required in params' });
     }
+
+     console.log(userId)
+     
+    // Validate userId format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid userId format' });
+    }
+
+   
+
+    // Cast userId to ObjectId
+    userId = new mongoose.Types.ObjectId(userId);
+
+    const auditType = 'general'; // Replace with your logic
 
     // Create blacklist entry
     const blacklist = await Blacklist.create({
       userId,
-      auditRecordId,
-      auditType,
     });
 
     // Send notification

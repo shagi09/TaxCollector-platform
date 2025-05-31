@@ -5,6 +5,7 @@ const incomeSchema = new mongoose.Schema({
   source: { type: String }, // e.g. Product Sales, Rent
   amount: { type: Number, required: true },
   receiptUrl: { type: String },
+  filename: { type: String },
   receivedDate: { type: Date },
   taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
   year: { type: Number, required: true },

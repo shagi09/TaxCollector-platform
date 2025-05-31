@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import {PlusIcon} from 'lucide-react'
+import { useRouter } from 'next/navigation';
 
 const getYear = (dateString: string) => {
   if (!dateString) return '';
@@ -18,6 +19,8 @@ const ExpensePage = () => {
   const [notes, setNotes] = useState('');
   const [receipt, setReceipt] = useState(null);
   const [selectedYear, setSelectedYear] = useState('');
+
+  const router=useRouter()
 
 
       const fetchExpenses = async (year) => {
@@ -244,14 +247,12 @@ const ExpensePage = () => {
               <td className="py-2">{expense.notes}</td>
               <td className="py-2">
                 {expense.receiptUrl && (
-                  <a
-                    href={`http://localhost:7000/api/${expense.receiptUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500"
-                  >
-                    View Receipt
-                  </a>
+                   <button
+      onClick={() => router.push(`/View/${expense.filename}`)}
+      className="text-blue-500 underline cursor-pointer"
+    >
+      View Receipt
+    </button>
                 )}
               </td>
               <td className="py-2">
@@ -268,6 +269,7 @@ const ExpensePage = () => {
       </table>
               <button
           type="button"
+          onClick={()=>{router.push('/payments')}}
           className="bg-black hover:bg-gray-800 text-white rounded-lg px-4 mr-2 py-2 mt-4"
         >
           proceed

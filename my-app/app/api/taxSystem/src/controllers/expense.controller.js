@@ -16,16 +16,16 @@ exports.createExpense = async (req, res) => {
     const taxPeriodId = await getOrCreateTaxPeriodId(date);
 
     const receiptUrl = req.file ? `/uploads/receipts/${req.file.filename}` : null;
-    
+    const filename = req.file.filename
 
     const expense = await Expense.create({
       userId,
       type,
       amount,
       receiptUrl,
+      filename,
       paidDate: date,
       notes,
-      taxPeriodId,
       month,
       vat,
       year
@@ -135,7 +135,7 @@ exports.deleteExpense = async (req, res) => {
       return res.status(404).json({ error: 'Expense not found or unauthorized' });
     }
 
-    await expense.remove();
+    await Expense.findByIdAndDelete(expense._id);
 
     res.json({ message: 'Expense deleted successfully' });
   } catch (error) {

@@ -5,6 +5,7 @@ const expenseSchema = new mongoose.Schema({
   type: { type: String }, // Salary, Rent, Utility, etc.
   amount: { type: Number, required: true },
   receiptUrl: { type: String },
+  filename: { type: String },
   paidDate: { type: Date },
   notes: { type: String },
   taxPeriodId: { type: mongoose.Schema.Types.ObjectId, ref: 'TaxPeriod' },
